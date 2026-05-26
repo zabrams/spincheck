@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "SpinCheck",
+  "version": "1.0.0",
+  "description": "Detect political bias in news articles you're reading — powered by Claude AI.",
+  "permissions": ["activeTab", "storage"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "SpinCheck"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

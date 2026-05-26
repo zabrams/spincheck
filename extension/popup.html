@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SpinCheck</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">
+        <span class="logo-icon">⚖️</span>
+        <span class="logo-text">SpinCheck</span>
+      </div>
+    </header>
+
+    <!-- Idle -->
+    <div id="idle-state">
+      <p class="page-url" id="page-url"></p>
+      <button id="analyze-btn" class="btn-primary">Analyze This Article</button>
+      <p class="hint">Reads the full text of the current page</p>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading-state" class="hidden">
+      <div class="spinner"></div>
+      <p class="loading-text">Analyzing article…</p>
+    </div>
+
+    <!-- Result -->
+    <div id="result-state" class="hidden">
+      <div class="score-row">
+        <div>
+          <div class="score-value" id="score-value"></div>
+          <div class="score-label" id="score-label"></div>
+        </div>
+      </div>
+
+      <div class="gauge-wrap">
+        <div class="gauge-labels">
+          <span class="lbl-left">← Left</span>
+          <span class="lbl-center">Neutral</span>
+          <span class="lbl-right">Right →</span>
+        </div>
+        <div class="gauge-track">
+          <div class="gauge-dot" id="gauge-dot"></div>
+        </div>
+        <div class="gauge-ticks">
+          <span>3</span><span>2</span><span>1</span><span>0</span><span>1</span><span>2</span><span>3</span>
+        </div>
+      </div>
+
+      <p class="summary" id="summary"></p>
+
+      <div class="badges" id="badges"></div>
+
+      <div class="tabs">
+        <button class="tab active" data-section="analysis">Analysis</button>
+        <button class="tab" data-section="evidence">Evidence</button>
+        <button class="tab" data-section="steelman">Both Sides</button>
+        <button class="tab" data-section="reading">Reading</button>
+      </div>
+
+      <div class="section active" id="section-analysis"></div>
+      <div class="section hidden" id="section-evidence"></div>
+      <div class="section hidden" id="section-steelman"></div>
+      <div class="section hidden" id="section-reading"></div>
+
+      <button id="re-analyze-btn" class="btn-secondary">↺ Analyze Again</button>
+    </div>
+
+    <!-- Error -->
+    <div id="error-state" class="hidden">
+      <div class="error-icon">⚠️</div>
+      <p id="error-msg"></p>
+      <button id="retry-btn" class="btn-secondary">Try Again</button>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
