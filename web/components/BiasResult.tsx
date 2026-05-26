@@ -169,7 +169,7 @@ export default function BiasResult({ analysis }: Props) {
           {activeSection === 'reading' && (
             <div className="space-y-4">
               <p className="text-xs text-gray-500 pb-2 border-b border-gray-800">
-                The following sources would help round out your perspective on this topic and provide a more balanced view.
+                Below are a few suggested articles if you&apos;d like to learn more about this topic:
               </p>
               {analysis.furtherReading.length === 0 ? (
                 <p className="text-gray-500 text-sm">No additional reading suggested.</p>
