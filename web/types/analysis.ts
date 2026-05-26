@@ -4,7 +4,6 @@ export interface BiasAnalysis {
   summary: string;
   isEditorial: boolean;
   presentsBothSides: boolean;
-  usesConjecture: boolean;
   analysis: string;
   evidence: string[];
   furtherReading: Array<{

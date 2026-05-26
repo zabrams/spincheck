@@ -111,7 +111,6 @@ function renderResult(a) {
   $('badges').innerHTML = [
     badge(a.isEditorial, '📝 Editorial', '📰 Factual', true),
     badge(!a.presentsBothSides, '✗ One-Sided', '✓ Balanced', true),
-    badge(a.usesConjecture, '⚠ Conjecture', '✓ Fact-Based', true),
   ].join('');
 
   const evidenceHtml = a.evidence?.length

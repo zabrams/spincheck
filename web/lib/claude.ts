@@ -48,7 +48,6 @@ Return ONLY valid JSON with no markdown formatting or code fences:
   "summary": "One sentence describing the overall bias assessment",
   "isEditorial": false,
   "presentsBothSides": true,
-  "usesConjecture": false,
   "analysis": "Detailed 2-3 paragraph analysis explaining the bias assessment with specific examples from the article",
   "evidence": ["Direct quote or specific example from the article showing bias — up to 5 items"],
   "furtherReading": [
