@@ -8,9 +8,16 @@ import {
   stripJsonFences,
   retryAnalyze,
 } from '@/lib/claude';
+import { fetchAndExtract } from '@/lib/extract';
 import type { BiasAnalysis } from '@/types/analysis';
 
 export const maxDuration = 60;
+
+/** Detect whether a string looks like a URL (so the Shortcut can send either text or URL). */
+function looksLikeUrl(s: string): boolean {
+  const trimmed = s.trim();
+  return /^https?:\/\/\S+$/i.test(trimmed) && trimmed.length < 2048;
+}
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -34,6 +41,35 @@ export async function POST(request: NextRequest) {
     url = body.url;
   } catch {
     return new Response('Invalid request body', { status: 400, headers: corsHeaders });
+  }
+
+  // If the Shortcut sent a URL (either explicitly as `url`, or as `content` because
+  // Safari's Share Sheet shares a URL) — fetch the page and extract the article text.
+  if (!content && url) {
+    try {
+      const extracted = await fetchAndExtract(url);
+      content = extracted.content;
+      if (!title) title = extracted.title;
+    } catch (err) {
+      return new Response(
+        err instanceof Error ? err.message : 'Failed to fetch article.',
+        { status: 400, headers: corsHeaders }
+      );
+    }
+  } else if (content && looksLikeUrl(content)) {
+    // Shortcut sent the URL in the `content` field — treat it as a URL
+    const sharedUrl = content.trim();
+    try {
+      const extracted = await fetchAndExtract(sharedUrl);
+      content = extracted.content;
+      if (!title) title = extracted.title;
+      url = sharedUrl;
+    } catch (err) {
+      return new Response(
+        err instanceof Error ? err.message : 'Failed to fetch article.',
+        { status: 400, headers: corsHeaders }
+      );
+    }
   }
 
   if (!content || content.trim().length < 100) {
