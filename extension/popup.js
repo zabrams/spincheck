@@ -116,14 +116,26 @@ function renderResult(a) {
     badge(a.hasMisleadingHeadline, '⚠ Misleading Headline', '✓ Accurate Headline', true),
   ].join('');
 
-  const evidenceHtml = a.evidence?.length
+  // Append confidence pill to score label
+  if (a.confidence) {
+    $('score-label').innerHTML = `${escHtml(labels[score] + dirLabel)} <span class="conf-pill conf-${a.confidence}">${a.confidence}</span>`;
+  }
+
+  const framingHtml = a.framingEvidence?.length
     ? `<div style="margin-top:12px;padding-top:10px;border-top:1px solid #1e2533">
-        <div style="font-size:10px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Evidence from the article</div>
-        ${a.evidence.map((e) => `<div class="ev-item">"${escHtml(e)}"</div>`).join('')}
+        <div style="font-size:10px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">How the article frames things</div>
+        ${a.framingEvidence.map((e) => `<div class="ev-item">"${escHtml(e)}"</div>`).join('')}
        </div>`
     : '';
 
-  $('section-analysis').innerHTML = `<p>${escHtml(a.analysis).replace(/\n/g, '<br>')}</p>${evidenceHtml}`;
+  const omissionHtml = a.omissionEvidence?.length
+    ? `<div style="margin-top:12px;padding-top:10px;border-top:1px solid #1e2533">
+        <div style="font-size:10px;font-weight:600;color:#f59e0b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">What's missing or downplayed</div>
+        ${a.omissionEvidence.map((e) => `<div class="ev-item" style="font-style:normal;border-left-color:rgba(245,158,11,0.4)">${escHtml(e)}</div>`).join('')}
+       </div>`
+    : '';
+
+  $('section-analysis').innerHTML = `<p>${escHtml(a.analysis).replace(/\n/g, '<br>')}</p>${framingHtml}${omissionHtml}`;
 
   const p = a.perspectives;
   const articleLabel = a.direction === 'left' ? 'Progressive Perspective'
@@ -131,25 +143,41 @@ function renderResult(a) {
   const opposingLabel = a.direction === 'left' ? 'Conservative Counter-Argument'
     : a.direction === 'right' ? 'Progressive Counter-Argument' : 'Opposing View';
 
-  if (a.direction === 'none') {
+  const hasPerspectiveContent = !!p.opposingView || !!p.commonGround;
+
+  if (!hasPerspectiveContent && a.direction === 'none') {
     $('section-steelman').innerHTML = `
       <div style="text-align:center;padding:16px 0">
         <div style="font-size:24px;margin-bottom:8px">⚖️</div>
-        <p style="color:#cbd5e1;font-size:12px;font-weight:600">This article presents a balanced perspective.</p>
-        <p style="color:#64748b;font-size:11px;margin-top:4px">No clear ideological slant was detected.</p>
+        <p style="color:#cbd5e1;font-size:12px;font-weight:600">This topic isn't politically contested.</p>
+        <p style="color:#64748b;font-size:11px;margin-top:4px">No meaningful left/right debate applies.</p>
       </div>`;
   } else {
+    const commonHtml = p.commonGround
+      ? `<div style="margin-bottom:10px">
+          <div class="sm-head" style="margin-bottom:5px;color:#c084fc">🤝 Common Ground</div>
+          <div style="background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.3);border-radius:6px;padding:8px"><p>${escHtml(p.commonGround)}</p></div>
+        </div>`
+      : '';
+
+    const articleHtml = `
+      <div style="margin-bottom:10px">
+        <div class="sm-head ${a.direction === 'left' ? 'left' : a.direction === 'right' ? 'right' : ''}" style="margin-bottom:5px">1 · ${escHtml(articleLabel)}</div>
+        <div class="${a.direction === 'left' ? 'sm-left' : a.direction === 'right' ? 'sm-right' : 'sm-left'}"><p>${escHtml(p.articleView)}</p></div>
+      </div>`;
+
+    const opposingHtml = p.opposingView
+      ? `<div>
+          <div class="sm-head ${a.direction === 'left' ? 'right' : a.direction === 'right' ? 'left' : ''}" style="margin-bottom:5px">2 · ${escHtml(opposingLabel)}</div>
+          <div class="${a.direction === 'left' ? 'sm-right' : a.direction === 'right' ? 'sm-left' : 'sm-right'}"><p>${escHtml(p.opposingView)}</p></div>
+        </div>`
+      : '';
+
     $('section-steelman').innerHTML = `
       <p style="font-size:10px;color:#475569;margin-bottom:10px">Topic: ${escHtml(p.topic)}</p>
-      <div style="margin-bottom:10px">
-        <div class="sm-head ${a.direction === 'left' ? 'left' : 'right'}" style="margin-bottom:5px">1 · ${escHtml(articleLabel)}</div>
-        <div class="${a.direction === 'left' ? 'sm-left' : 'sm-right'}"><p>${escHtml(p.articleView)}</p></div>
-      </div>
-      ${p.opposingView ? `
-      <div>
-        <div class="sm-head ${a.direction === 'left' ? 'right' : 'left'}" style="margin-bottom:5px">2 · ${escHtml(opposingLabel)}</div>
-        <div class="${a.direction === 'left' ? 'sm-right' : 'sm-left'}"><p>${escHtml(p.opposingView)}</p></div>
-      </div>` : ''}`;
+      ${commonHtml}
+      ${articleHtml}
+      ${opposingHtml}`;
   }
 
   $('section-reading').innerHTML = a.furtherReading?.length

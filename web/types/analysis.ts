@@ -1,6 +1,7 @@
 export interface BiasAnalysis {
   score: 0 | 1 | 2 | 3;
   direction: 'left' | 'right' | 'none';
+  confidence: 'low' | 'medium' | 'high';
   summary: string;
   isEditorial: boolean;
   presentsBothSides: boolean;
@@ -8,7 +9,8 @@ export interface BiasAnalysis {
   hasSelectiveSourcing: boolean;
   hasMisleadingHeadline: boolean;
   analysis: string;
-  evidence: string[];
+  framingEvidence: string[];
+  omissionEvidence: string[];
   furtherReading: Array<{
     description: string;
     searchQuery: string;
@@ -17,6 +19,7 @@ export interface BiasAnalysis {
     topic: string;
     articleView: string;
     opposingView: string | null;
+    commonGround: string | null;
   };
 }
 

@@ -1,6 +1,16 @@
 import { NextRequest } from 'next/server';
-import { client, MODEL, SYSTEM_PROMPT, truncateContent } from '@/lib/claude';
+import {
+  client,
+  MODEL,
+  MAX_TOKENS,
+  SYSTEM_PROMPT,
+  buildUserMessage,
+  stripJsonFences,
+  retryAnalyze,
+} from '@/lib/claude';
 import type { AnalyzeRequest, BiasAnalysis } from '@/types/analysis';
+
+export const maxDuration = 60; // Vercel Pro: allow up to 60s for Sonnet
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -30,10 +40,11 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const content = truncateContent(body.content);
-  const userMessage = body.title
-    ? `Article Title: ${body.title}\n\nArticle Content:\n${content}`
-    : `Article Content:\n${content}`;
+  const userMessage = buildUserMessage({
+    content: body.content,
+    title: body.title,
+    url: body.url,
+  });
 
   const encoder = new TextEncoder();
 
@@ -43,9 +54,10 @@ export async function POST(request: NextRequest) {
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
 
       try {
+        // First attempt — streaming, so the client gets progress updates
         const msgStream = client.messages.stream({
           model: MODEL,
-          max_tokens: 2048,
+          max_tokens: MAX_TOKENS,
           system: [
             {
               type: 'text' as const,
@@ -64,15 +76,22 @@ export async function POST(request: NextRequest) {
 
         await msgStream.finalMessage();
 
-        const cleaned = accumulated
-          .replace(/^```(?:json)?\n?/, '')
-          .replace(/\n?```$/, '')
-          .trim();
-        const analysis = JSON.parse(cleaned) as BiasAnalysis;
+        let analysis: BiasAnalysis;
+        try {
+          analysis = JSON.parse(stripJsonFences(accumulated)) as BiasAnalysis;
+        } catch {
+          // JSON malformed — retry once with stricter system prompt
+          send({ type: 'progress' });
+          analysis = (await retryAnalyze(userMessage)) as BiasAnalysis;
+        }
+
         send({ type: 'result', data: analysis });
       } catch (err) {
         console.error('Analysis error:', err);
-        send({ type: 'error', error: err instanceof Error ? err.message : 'Analysis failed' });
+        send({
+          type: 'error',
+          error: err instanceof Error ? err.message : 'Analysis failed',
+        });
       }
 
       controller.close();
