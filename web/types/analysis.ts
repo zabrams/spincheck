@@ -4,6 +4,9 @@ export interface BiasAnalysis {
   summary: string;
   isEditorial: boolean;
   presentsBothSides: boolean;
+  usesEmotionalLanguage: boolean;
+  hasSelectiveSourcing: boolean;
+  hasMisleadingHeadline: boolean;
   analysis: string;
   evidence: string[];
   furtherReading: Array<{

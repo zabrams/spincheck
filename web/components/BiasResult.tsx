@@ -72,6 +72,9 @@ export default function BiasResult({ analysis }: Props) {
         <div className="mt-5 flex flex-wrap gap-2">
           <Badge active={analysis.isEditorial} trueLabel="Editorial" falseLabel="Factual Reporting" trueIcon="📝" falseIcon="📰" warnOnTrue />
           <Badge active={!analysis.presentsBothSides} trueLabel="One-Sided" falseLabel="Presents Both Sides" trueIcon="✗" falseIcon="✓" warnOnTrue />
+          <Badge active={analysis.usesEmotionalLanguage} trueLabel="Emotional Language" falseLabel="Neutral Tone" trueIcon="⚠" falseIcon="✓" warnOnTrue />
+          <Badge active={analysis.hasSelectiveSourcing} trueLabel="Selective Sourcing" falseLabel="Diverse Sources" trueIcon="⚠" falseIcon="✓" warnOnTrue />
+          <Badge active={analysis.hasMisleadingHeadline} trueLabel="Misleading Headline" falseLabel="Accurate Headline" trueIcon="⚠" falseIcon="✓" warnOnTrue />
         </div>
       </div>
 

@@ -13,10 +13,10 @@ BIAS DETECTION FRAMEWORK:
 
 1. Factual vs Editorial: Is the article reporting facts, or is the author injecting opinion and interpretation?
 2. Balance: If covering a politically contested topic, does the article fairly represent opposing viewpoints?
-3. Language: Does the author use charged language, loaded framing, or emotionally weighted words favoring one political perspective?
-4. Source Selection: Are sources cited primarily from one political perspective? Are contradicting experts or studies ignored?
-5. Omission: What important context or counterarguments are conspicuously absent?
-6. Conjecture: Does the author present speculation as fact, or draw conclusions beyond what the evidence supports?
+3. Emotional Language: Does the author use charged words ("catastrophic," "radical," "destroy," "regime") designed to provoke an emotional reaction rather than inform? This is distinct from being editorial — a measured op-ed can avoid emotional language; a "news" article can use loaded framing while claiming objectivity.
+4. Selective Sourcing: Are the experts, studies, and data cited drawn primarily from one ideological camp (e.g. only progressive think tanks, or only conservative ones)? This is distinct from balance — an article can quote multiple views but source all its underlying data from partisan organizations.
+5. Misleading Headline: Does the headline overstate, misrepresent, or sensationalize what the article actually reports? If no headline was provided, set this to false.
+6. Omission: What important context or counterarguments are conspicuously absent?
 
 SCORING:
 - 0: No bias. Purely factual, balanced sourcing, no editorializing, presents multiple perspectives equally
@@ -48,6 +48,9 @@ Return ONLY valid JSON with no markdown formatting or code fences:
   "summary": "One sentence describing the overall bias assessment",
   "isEditorial": false,
   "presentsBothSides": true,
+  "usesEmotionalLanguage": false,
+  "hasSelectiveSourcing": false,
+  "hasMisleadingHeadline": false,
   "analysis": "Detailed 2-3 paragraph analysis explaining the bias assessment with specific examples from the article",
   "evidence": ["Direct quote or specific example from the article showing bias — up to 5 items"],
   "furtherReading": [

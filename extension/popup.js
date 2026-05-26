@@ -111,6 +111,9 @@ function renderResult(a) {
   $('badges').innerHTML = [
     badge(a.isEditorial, '📝 Editorial', '📰 Factual', true),
     badge(!a.presentsBothSides, '✗ One-Sided', '✓ Balanced', true),
+    badge(a.usesEmotionalLanguage, '⚠ Emotional Language', '✓ Neutral Tone', true),
+    badge(a.hasSelectiveSourcing, '⚠ Selective Sourcing', '✓ Diverse Sources', true),
+    badge(a.hasMisleadingHeadline, '⚠ Misleading Headline', '✓ Accurate Headline', true),
   ].join('');
 
   const evidenceHtml = a.evidence?.length
