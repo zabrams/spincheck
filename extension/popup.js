@@ -1,5 +1,29 @@
 const $ = (id) => document.getElementById(id);
 
+const PHASE_MESSAGES = {
+  reading: 'Reading the article…',
+  assessing: 'Assessing political bias…',
+  writing_analysis: 'Writing detailed analysis…',
+  gathering_evidence: 'Gathering evidence from the text…',
+  finding_omissions: 'Looking for what\'s missing…',
+  finding_sources: 'Finding sources for balance…',
+  perspectives: 'Steel-manning both sides…',
+  common_ground: 'Looking for common ground…',
+};
+
+function updatePhase(phase) {
+  const el = $('loading-phase');
+  if (el && PHASE_MESSAGES[phase]) {
+    el.textContent = PHASE_MESSAGES[phase];
+    // brief fade-in animation
+    el.style.opacity = '0';
+    requestAnimationFrame(() => {
+      el.style.transition = 'opacity 250ms ease';
+      el.style.opacity = '1';
+    });
+  }
+}
+
 const states = {
   idle: $('idle-state'),
   loading: $('loading-state'),
@@ -47,8 +71,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (stored?.status === 'complete' && age < ONE_DAY) {
     renderResult(stored.data);
   } else if (stored?.status === 'analyzing' && age < FIVE_MIN) {
-    // Background is still working — show loading and wait for its message
+    // Background is still working — show loading with last known phase
     showState('loading');
+    if (stored.phase) updatePhase(stored.phase);
     listenForCompletion();
   } else if (stored?.status === 'error' && age < FIVE_MIN) {
     $('error-msg').textContent = stored.error;
@@ -61,6 +86,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 function listenForCompletion() {
   function handler(message) {
     if (message.url !== currentUrl) return;
+    if (message.action === 'analysisPhase') {
+      updatePhase(message.phase);
+      return; // don't remove listener — more events coming
+    }
     chrome.runtime.onMessage.removeListener(handler);
     if (message.action === 'analysisComplete') {
       renderResult(message.data);
@@ -75,6 +104,7 @@ function listenForCompletion() {
 $('analyze-btn').addEventListener('click', async () => {
   if (!currentTabId || !currentUrl) return;
   showState('loading');
+  updatePhase('reading');
   listenForCompletion();
   chrome.runtime.sendMessage({ action: 'startAnalysis', tabId: currentTabId, url: currentUrl });
 });

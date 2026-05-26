@@ -11,8 +11,10 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 });
 
 async function runAnalysis(tabId, url) {
-  // Mark as in-progress so popup can show loading state if reopened
-  await chrome.storage.local.set({ [`sc_${url}`]: { status: 'analyzing', ts: Date.now() } });
+  // Mark as in-progress (with initial phase) so popup can resume if reopened
+  await chrome.storage.local.set({
+    [`sc_${url}`]: { status: 'analyzing', phase: 'reading', ts: Date.now() },
+  });
 
   try {
     // Extract article content via content script
@@ -38,7 +40,7 @@ async function runAnalysis(tabId, url) {
       throw new Error(err.error || `Server error (${apiResp.status})`);
     }
 
-    // Parse SSE stream
+    // Parse SSE stream — forward phase events to the popup if it's open
     const reader = apiResp.body.getReader();
     const decoder = new TextDecoder();
     let result = null;
@@ -53,6 +55,13 @@ async function runAnalysis(tabId, url) {
         let event;
         try { event = JSON.parse(line.slice(6)); } catch { continue; }
 
+        if (event.type === 'phase' && event.phase) {
+          // Update storage so a re-opened popup shows the latest phase
+          chrome.storage.local.set({
+            [`sc_${url}`]: { status: 'analyzing', phase: event.phase, ts: Date.now() },
+          });
+          chrome.runtime.sendMessage({ action: 'analysisPhase', url, phase: event.phase }).catch(() => {});
+        }
         if (event.type === 'result') { result = event.data; break outer; }
         if (event.type === 'error') throw new Error(event.error || 'Analysis failed');
       }

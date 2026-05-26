@@ -5,15 +5,28 @@ import ArticleInput from '@/components/ArticleInput';
 import BiasResult from '@/components/BiasResult';
 import type { BiasAnalysis } from '@/types/analysis';
 
+const PHASE_MESSAGES: Record<string, string> = {
+  reading: 'Reading the article…',
+  assessing: 'Assessing political bias…',
+  writing_analysis: 'Writing detailed analysis…',
+  gathering_evidence: 'Gathering evidence from the text…',
+  finding_omissions: 'Looking for what’s missing…',
+  finding_sources: 'Finding sources for balance…',
+  perspectives: 'Steel-manning both sides…',
+  common_ground: 'Looking for common ground…',
+};
+
 export default function Home() {
   const [analysis, setAnalysis] = useState<BiasAnalysis | null>(null);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [phase, setPhase] = useState<string>('reading');
   const [error, setError] = useState<string | null>(null);
 
   async function handleAnalyze(content: string, title?: string) {
     setLoading(true);
     setProgress(0);
+    setPhase('reading');
     setError(null);
     setAnalysis(null);
 
@@ -40,7 +53,7 @@ export default function Home() {
         const text = decoder.decode(value, { stream: true });
         for (const line of text.split('\n')) {
           if (!line.startsWith('data: ')) continue;
-          let event: { type: string; data?: BiasAnalysis; error?: string };
+          let event: { type: string; data?: BiasAnalysis; error?: string; phase?: string };
           try {
             event = JSON.parse(line.slice(6));
           } catch {
@@ -51,6 +64,8 @@ export default function Home() {
             progressCount++;
             // Asymptotic curve toward 90% — snaps to 100 on result
             setProgress(Math.min(90, Math.round(90 * (1 - Math.exp(-progressCount / 15)))));
+          } else if (event.type === 'phase' && event.phase) {
+            setPhase(event.phase);
           } else if (event.type === 'result' && event.data) {
             setProgress(100);
             setAnalysis(event.data);
@@ -93,9 +108,12 @@ export default function Home() {
 
         {loading && (
           <div className="mt-4">
-            <div className="flex justify-between text-xs text-gray-500 mb-1.5">
-              <span>Analyzing article…</span>
-              <span>{progress}%</span>
+            <div className="flex justify-between text-xs text-gray-400 mb-1.5">
+              <span key={phase} className="animate-in fade-in slide-in-from-left-1 duration-300">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500 mr-2 animate-pulse" />
+                {PHASE_MESSAGES[phase] || 'Analyzing…'}
+              </span>
+              <span className="text-gray-500 tabular-nums">{progress}%</span>
             </div>
             <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
               <div

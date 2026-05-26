@@ -68,9 +68,32 @@ export async function POST(request: NextRequest) {
           messages: [{ role: 'user', content: userMessage }],
         });
 
+        // Phase detection — emit a phase event when Claude starts writing each major field.
+        // Order matches the JSON schema order in SYSTEM_PROMPT.
+        const PHASES = [
+          { trigger: '"score"', name: 'assessing' },
+          { trigger: '"analysis"', name: 'writing_analysis' },
+          { trigger: '"framingEvidence"', name: 'gathering_evidence' },
+          { trigger: '"omissionEvidence"', name: 'finding_omissions' },
+          { trigger: '"furtherReading"', name: 'finding_sources' },
+          { trigger: '"perspectives"', name: 'perspectives' },
+          { trigger: '"commonGround"', name: 'common_ground' },
+        ];
+        let phaseIdx = -1;
+
         let accumulated = '';
         msgStream.on('text', (text) => {
           accumulated += text;
+
+          // Advance through phases as their trigger strings appear
+          while (
+            phaseIdx + 1 < PHASES.length &&
+            accumulated.includes(PHASES[phaseIdx + 1].trigger)
+          ) {
+            phaseIdx++;
+            send({ type: 'phase', phase: PHASES[phaseIdx].name });
+          }
+
           send({ type: 'progress' });
         });
 
