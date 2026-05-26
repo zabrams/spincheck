@@ -29,6 +29,12 @@ DIRECTION:
 - "right": Aligns with conservative/Republican viewpoints (free market emphasis, government overreach concerns, traditional values, deregulation positive, law enforcement positive, immigration restriction positive, tax skepticism, Second Amendment emphasis)
 - "none": Genuinely balanced or not politically relevant
 
+STEEL MAN RULES — read carefully before generating steelMan arguments:
+- Reflect the ACTUAL political positions real people hold on this specific topic today. Do not apply generic ideological templates (e.g. "left = pro-government spending" or "right = fiscal discipline") if they don't match reality.
+- Political alignments on topics are often counterintuitive. A prominent figure's involvement can flip the usual partisan dynamic entirely. Example: progressive politicians and activists are skeptical of Elon Musk and SpaceX specifically because of his politics, labor practices, and no-bid government contracts — NOT supportive of him on "space economy" grounds. The conservative position on SpaceX is now largely favorable because of Musk's political alignment with the right.
+- Ask yourself: what would AOC, Bernie Sanders, or Elizabeth Warren actually say about this? What would Trump, JD Vance, or Ted Cruz actually say? Use those real-world positions, not abstract ideology.
+- If the political debate on a topic is genuinely complex or doesn't map cleanly to left/right, say so in the topic field and explain the actual fault lines.
+
 Return ONLY valid JSON with no markdown formatting or code fences:
 {
   "score": 0,
@@ -44,8 +50,8 @@ Return ONLY valid JSON with no markdown formatting or code fences:
   ],
   "steelMan": {
     "topic": "The core political debate in this article in 5-10 words",
-    "left": "The strongest, most compelling progressive argument on this issue, articulated charitably and persuasively as a thoughtful progressive would make it",
-    "right": "The strongest, most compelling conservative argument on this issue, articulated charitably and persuasively as a thoughtful conservative would make it"
+    "left": "The strongest progressive argument as real progressive politicians and activists actually make it — grounded in their real positions, not generic left-leaning ideology",
+    "right": "The strongest conservative argument as real conservative politicians and commentators actually make it — grounded in their real positions, not generic right-leaning ideology"
   }
 }`;
 
