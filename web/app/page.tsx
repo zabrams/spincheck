@@ -118,16 +118,19 @@ export default function Home() {
       <footer className="text-center py-8 text-xs text-gray-700 border-t border-gray-800 mt-12">
         SpinCheck uses AI to detect media bias. Results are analytical, not authoritative.
         <br />
-        Also available as a{' '}
-        <a
-          href="https://github.com/zabrams/spincheck"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-gray-500 hover:text-gray-300"
-        >
-          Chrome extension
-        </a>
-        .
+        <span className="inline-flex gap-4 mt-2">
+          <a
+            href="https://github.com/zabrams/spincheck"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-gray-500 hover:text-gray-300"
+          >
+            Chrome extension
+          </a>
+          <a href="/privacy" className="text-gray-500 hover:text-gray-300">
+            Privacy Policy
+          </a>
+        </span>
       </footer>
     </main>
   );

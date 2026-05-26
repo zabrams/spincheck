@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SpinCheck Icon Generator</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #0f1117; color: #e2e8f0; padding: 40px; }
+    h1 { font-size: 24px; margin-bottom: 8px; }
+    p { color: #64748b; margin-bottom: 32px; }
+    .grid { display: flex; gap: 32px; flex-wrap: wrap; align-items: flex-end; }
+    .item { text-align: center; }
+    .item canvas { display: block; border-radius: 8px; margin-bottom: 8px; }
+    .label { font-size: 12px; color: #64748b; margin-bottom: 8px; }
+    button {
+      display: block; width: 100%; padding: 6px 12px;
+      background: #2563eb; color: white; border: none; border-radius: 6px;
+      font-size: 12px; cursor: pointer;
+    }
+    button:hover { background: #1d4ed8; }
+    .download-all {
+      margin-top: 32px; padding: 12px 24px; font-size: 14px;
+      font-weight: 600; border-radius: 8px; width: auto;
+    }
+    .instructions {
+      margin-top: 40px; padding: 20px; background: #1e2533;
+      border-radius: 8px; border: 1px solid #2d3748;
+      font-size: 13px; line-height: 1.7; color: #94a3b8;
+    }
+    .instructions strong { color: #e2e8f0; }
+  </style>
+</head>
+<body>
+  <h1>⚖️ SpinCheck Icon Generator</h1>
+  <p>Click "Download" under each size, then move all files into the <code>extension/icons/</code> folder.</p>
+
+  <div class="grid" id="grid"></div>
+
+  <button class="download-all" onclick="downloadAll()">⬇ Download All Sizes</button>
+
+  <div class="instructions">
+    <strong>After downloading:</strong><br>
+    1. Move all 4 PNG files into <code>extension/icons/</code><br>
+    2. Add the following to <code>extension/manifest.json</code> inside the <code>"action"</code> block:<br><br>
+    <code style="background:#0f1117;padding:8px 12px;display:block;border-radius:4px;color:#60a5fa">
+      "default_icon": { "16": "icons/icon16.png", "32": "icons/icon32.png", "48": "icons/icon48.png", "128": "icons/icon128.png" }
+    </code><br>
+    And at the top level:<br><br>
+    <code style="background:#0f1117;padding:8px 12px;display:block;border-radius:4px;color:#60a5fa">
+      "icons": { "16": "icons/icon16.png", "32": "icons/icon32.png", "48": "icons/icon48.png", "128": "icons/icon128.png" }
+    </code>
+  </div>
+
+  <script>
+    const SIZES = [16, 32, 48, 128];
+
+    function drawIcon(size) {
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      const s = size / 128; // scale factor
+
+      // Background — rounded rect
+      const r = size * 0.18;
+      ctx.beginPath();
+      ctx.moveTo(r, 0);
+      ctx.lineTo(size - r, 0);
+      ctx.quadraticCurveTo(size, 0, size, r);
+      ctx.lineTo(size, size - r);
+      ctx.quadraticCurveTo(size, size, size - r, size);
+      ctx.lineTo(r, size);
+      ctx.quadraticCurveTo(0, size, 0, size - r);
+      ctx.lineTo(0, r);
+      ctx.quadraticCurveTo(0, 0, r, 0);
+      ctx.closePath();
+
+      const bg = ctx.createLinearGradient(0, 0, size, size);
+      bg.addColorStop(0, '#1e2d4a');
+      bg.addColorStop(1, '#0f1117');
+      ctx.fillStyle = bg;
+      ctx.fill();
+
+      // Scale drawing — all coordinates are for 128px then scaled
+      const cx = size / 2;
+      const lw = Math.max(1.5, 4.5 * s);
+
+      // Central pillar
+      ctx.beginPath();
+      ctx.moveTo(cx, 28 * s);
+      ctx.lineTo(cx, 98 * s);
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.lineWidth = lw;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+
+      // Base
+      ctx.beginPath();
+      ctx.moveTo(cx - 22 * s, 98 * s);
+      ctx.lineTo(cx + 22 * s, 98 * s);
+      ctx.stroke();
+
+      // Horizontal beam
+      ctx.beginPath();
+      ctx.moveTo(cx - 42 * s, 38 * s);
+      ctx.lineTo(cx + 42 * s, 38 * s);
+      ctx.stroke();
+
+      // Center pivot dot
+      ctx.beginPath();
+      ctx.arc(cx, 38 * s, Math.max(2, 4 * s), 0, Math.PI * 2);
+      ctx.fillStyle = '#e2e8f0';
+      ctx.fill();
+
+      // Left arm (slightly higher — tipped scale)
+      ctx.beginPath();
+      ctx.moveTo(cx - 42 * s, 38 * s);
+      ctx.lineTo(cx - 42 * s, 60 * s);
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.stroke();
+
+      // Left plate
+      ctx.beginPath();
+      ctx.moveTo(cx - 58 * s, 60 * s);
+      ctx.lineTo(cx - 26 * s, 60 * s);
+      ctx.strokeStyle = '#60a5fa';
+      ctx.lineWidth = Math.max(2, 5.5 * s);
+      ctx.stroke();
+
+      // Right arm (slightly lower)
+      ctx.beginPath();
+      ctx.moveTo(cx + 42 * s, 38 * s);
+      ctx.lineTo(cx + 42 * s, 68 * s);
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.lineWidth = lw;
+      ctx.stroke();
+
+      // Right plate
+      ctx.beginPath();
+      ctx.moveTo(cx + 26 * s, 68 * s);
+      ctx.lineTo(cx + 58 * s, 68 * s);
+      ctx.strokeStyle = '#f87171';
+      ctx.lineWidth = Math.max(2, 5.5 * s);
+      ctx.stroke();
+
+      return canvas;
+    }
+
+    function download(canvas, size) {
+      const link = document.createElement('a');
+      link.download = `icon${size}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    function downloadAll() {
+      SIZES.forEach((size, i) => {
+        setTimeout(() => {
+          const canvas = drawIcon(size);
+          download(canvas, size);
+        }, i * 150);
+      });
+    }
+
+    // Render previews
+    const grid = document.getElementById('grid');
+    SIZES.forEach(size => {
+      const canvas = drawIcon(size);
+      canvas.style.width = Math.max(size, 64) + 'px';
+      canvas.style.height = Math.max(size, 64) + 'px';
+      canvas.style.imageRendering = 'pixelated';
+
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.innerHTML = `<div class="label">${size}×${size}px</div>`;
+      div.appendChild(canvas);
+
+      const btn = document.createElement('button');
+      btn.textContent = 'Download';
+      btn.onclick = () => download(drawIcon(size), size);
+      div.appendChild(btn);
+
+      grid.appendChild(div);
+    });
+  </script>
+</body>
+</html>
