@@ -29,11 +29,17 @@ DIRECTION:
 - "right": Aligns with conservative/Republican viewpoints (free market emphasis, government overreach concerns, traditional values, deregulation positive, law enforcement positive, immigration restriction positive, tax skepticism, Second Amendment emphasis)
 - "none": Genuinely balanced or not politically relevant
 
-STEEL MAN RULES — read carefully before generating steelMan arguments:
-- Reflect the ACTUAL political positions real people hold on this specific topic today. Do not apply generic ideological templates (e.g. "left = pro-government spending" or "right = fiscal discipline") if they don't match reality.
-- Political alignments on topics are often counterintuitive. A prominent figure's involvement can flip the usual partisan dynamic entirely. Example: progressive politicians and activists are skeptical of Elon Musk and SpaceX specifically because of his politics, labor practices, and no-bid government contracts — NOT supportive of him on "space economy" grounds. The conservative position on SpaceX is now largely favorable because of Musk's political alignment with the right.
-- Ask yourself: what would AOC, Bernie Sanders, or Elizabeth Warren actually say about this? What would Trump, JD Vance, or Ted Cruz actually say? Use those real-world positions, not abstract ideology.
-- If the political debate on a topic is genuinely complex or doesn't map cleanly to left/right, say so in the topic field and explain the actual fault lines.
+PERSPECTIVES RULES — read carefully:
+- "articleView" is a neutral 2-3 sentence summary of the argument the article is actually making — what is the author's core claim or stance?
+- "opposingView" is the strongest counter-argument from the opposing political side, grounded in what real politicians and commentators on that side actually say. Do NOT apply generic ideological templates. Reflect the real political landscape.
+  - Example: progressives are skeptical of SpaceX/Musk due to no-bid contracts, labor practices, and his political influence — not generically pro-space-spending. Conservatives now largely support Musk.
+  - Ask: what would AOC, Bernie, or Warren actually say? What would Trump, JD Vance, or Ted Cruz actually say?
+- If the article is neutral (score 0), set opposingView to null.
+
+FURTHER READING RULES:
+- Recommend 1-3 specific publications or source types that would give a more balanced view of the topic.
+- Be specific: name the outlet or type (e.g. "Wall Street Journal's editorial board coverage", "Congressional Budget Office data on X", "Reuters fact-check coverage").
+- The searchQuery should be targeted enough to find relevant articles quickly.
 
 Return ONLY valid JSON with no markdown formatting or code fences:
 {
@@ -46,12 +52,12 @@ Return ONLY valid JSON with no markdown formatting or code fences:
   "analysis": "Detailed 2-3 paragraph analysis explaining the bias assessment with specific examples from the article",
   "evidence": ["Direct quote or specific example from the article showing bias — up to 5 items"],
   "furtherReading": [
-    {"description": "What this source type provides for balanced context", "searchQuery": "specific search terms for finding balanced information"}
+    {"description": "Specific publication or source type and what perspective it adds", "searchQuery": "targeted search terms to find that coverage"}
   ],
-  "steelMan": {
+  "perspectives": {
     "topic": "The core political debate in this article in 5-10 words",
-    "left": "The strongest progressive argument as real progressive politicians and activists actually make it — grounded in their real positions, not generic left-leaning ideology",
-    "right": "The strongest conservative argument as real conservative politicians and commentators actually make it — grounded in their real positions, not generic right-leaning ideology"
+    "articleView": "Neutral 2-3 sentence summary of the argument the article is actually making",
+    "opposingView": "The strongest counter-argument from the opposing side as real politicians/commentators on that side actually make it. Null if article is neutral."
   }
 }`;
 

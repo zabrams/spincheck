@@ -11,10 +11,10 @@ export interface BiasAnalysis {
     description: string;
     searchQuery: string;
   }>;
-  steelMan: {
+  perspectives: {
     topic: string;
-    left: string;
-    right: string;
+    articleView: string;
+    opposingView: string | null;
   };
 }
 
