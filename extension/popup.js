@@ -24,71 +24,70 @@ function switchTab(section) {
 document.querySelectorAll('.tab').forEach((t) =>
   t.addEventListener('click', () => switchTab(t.dataset.section))
 );
-$('analyze-btn').addEventListener('click', analyze);
-$('re-analyze-btn').addEventListener('click', () => showState('idle'));
-$('retry-btn').addEventListener('click', analyze);
 
 let currentUrl = '';
+let currentTabId = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (tab) {
     currentUrl = tab.url || '';
+    currentTabId = tab.id;
     const displayUrl = currentUrl.replace(/^https?:\/\/(www\.)?/, '').substring(0, 55);
     $('page-url').textContent = displayUrl || 'Unknown page';
   }
 
-  // Load cached result
+  // Check storage to resume any in-flight or completed analysis
   const key = `sc_${currentUrl}`;
-  const cached = await chrome.storage.local.get(key);
-  const entry = cached[key];
-  if (entry && Date.now() - entry.ts < 24 * 60 * 60 * 1000) {
-    renderResult(entry.data);
+  const stored = (await chrome.storage.local.get(key))[key];
+  const age = stored ? Date.now() - stored.ts : Infinity;
+  const FIVE_MIN = 5 * 60 * 1000;
+  const ONE_DAY = 24 * 60 * 60 * 1000;
+
+  if (stored?.status === 'complete' && age < ONE_DAY) {
+    renderResult(stored.data);
+  } else if (stored?.status === 'analyzing' && age < FIVE_MIN) {
+    // Background is still working — show loading and wait for its message
+    showState('loading');
+    listenForCompletion();
+  } else if (stored?.status === 'error' && age < FIVE_MIN) {
+    $('error-msg').textContent = stored.error;
+    showState('error');
+  } else {
+    showState('idle');
   }
 });
 
-async function analyze() {
-  showState('loading');
-
-  try {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (!tab?.id) throw new Error('No active tab found');
-
-    let content, title;
-    try {
-      const resp = await chrome.tabs.sendMessage(tab.id, { action: 'getArticleContent' });
-      if (!resp?.success) throw new Error('Could not read page');
-      content = resp.content;
-      title = resp.title;
-    } catch {
-      throw new Error('Cannot read page content — try refreshing first.');
+function listenForCompletion() {
+  function handler(message) {
+    if (message.url !== currentUrl) return;
+    chrome.runtime.onMessage.removeListener(handler);
+    if (message.action === 'analysisComplete') {
+      renderResult(message.data);
+    } else if (message.action === 'analysisError') {
+      $('error-msg').textContent = message.error;
+      showState('error');
     }
-
-    if (!content || content.length < 100) {
-      throw new Error('Page has too little text to analyze.');
-    }
-
-    const apiResp = await fetch(SPINCHECK_CONFIG.API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content, title, url: currentUrl }),
-    });
-
-    if (!apiResp.ok) {
-      const err = await apiResp.json().catch(() => ({}));
-      throw new Error(err.error || `Server error (${apiResp.status})`);
-    }
-
-    const data = await apiResp.json();
-    if (!data.success) throw new Error(data.error || 'Analysis failed');
-
-    await chrome.storage.local.set({ [`sc_${currentUrl}`]: { data: data.data, ts: Date.now() } });
-    renderResult(data.data);
-  } catch (err) {
-    $('error-msg').textContent = err.message || 'Unknown error';
-    showState('error');
   }
+  chrome.runtime.onMessage.addListener(handler);
 }
+
+$('analyze-btn').addEventListener('click', async () => {
+  if (!currentTabId || !currentUrl) return;
+  showState('loading');
+  listenForCompletion();
+  chrome.runtime.sendMessage({ action: 'startAnalysis', tabId: currentTabId, url: currentUrl });
+});
+
+$('re-analyze-btn').addEventListener('click', async () => {
+  await chrome.storage.local.remove(`sc_${currentUrl}`);
+  showState('idle');
+});
+
+$('retry-btn').addEventListener('click', async () => {
+  await chrome.storage.local.remove(`sc_${currentUrl}`);
+  showState('idle');
+});
 
 function renderResult(a) {
   const dir = a.direction;
@@ -101,7 +100,6 @@ function renderResult(a) {
   $('score-value').className = `score-value ${dir}`;
   $('score-label').textContent = labels[score] + dirLabel;
 
-  // Gauge
   const val = dir === 'none' ? 0 : dir === 'left' ? -score : score;
   const pct = ((val + 3) / 6) * 100;
   const dot = $('gauge-dot');
@@ -110,42 +108,33 @@ function renderResult(a) {
 
   $('summary').textContent = a.summary;
 
-  // Badges
   $('badges').innerHTML = [
     badge(a.isEditorial, '📝 Editorial', '📰 Factual', true),
     badge(!a.presentsBothSides, '✗ One-Sided', '✓ Balanced', true),
     badge(a.usesConjecture, '⚠ Conjecture', '✓ Fact-Based', true),
   ].join('');
 
-  // Analysis
   $('section-analysis').innerHTML = `<p>${escHtml(a.analysis).replace(/\n/g, '<br>')}</p>`;
 
-  // Evidence
-  $('section-evidence').innerHTML = a.evidence.length
+  $('section-evidence').innerHTML = a.evidence?.length
     ? a.evidence.map((e) => `<div class="ev-item">"${escHtml(e)}"</div>`).join('')
     : '<p>No specific evidence highlighted.</p>';
 
-  // Steel man
   $('section-steelman').innerHTML = `
     <p style="font-size:10px;color:#475569;margin-bottom:8px">Topic: ${escHtml(a.steelMan.topic)}</p>
     <div class="sm-grid">
-      <div class="sm-left"><div class="sm-head left">Progressive View</div><p>${escHtml(a.steelMan.left)}</p></div>
-      <div class="sm-right"><div class="sm-head right">Conservative View</div><p>${escHtml(a.steelMan.right)}</p></div>
+      <div class="sm-left"><div class="sm-head left">Progressive</div><p>${escHtml(a.steelMan.left)}</p></div>
+      <div class="sm-right"><div class="sm-head right">Conservative</div><p>${escHtml(a.steelMan.right)}</p></div>
     </div>`;
 
-  // Further reading
-  $('section-reading').innerHTML = a.furtherReading.length
-    ? a.furtherReading
-        .map(
-          (r) => `
-      <div class="read-item">
-        <div class="read-desc">${escHtml(r.description)}</div>
-        <a class="read-link" href="https://www.google.com/search?q=${encodeURIComponent(r.searchQuery)}" target="_blank">
-          🔍 "${escHtml(r.searchQuery)}"
-        </a>
-      </div>`
-        )
-        .join('')
+  $('section-reading').innerHTML = a.furtherReading?.length
+    ? a.furtherReading.map((r) => `
+        <div class="read-item">
+          <div class="read-desc">${escHtml(r.description)}</div>
+          <a class="read-link" href="https://www.google.com/search?q=${encodeURIComponent(r.searchQuery)}" target="_blank">
+            🔍 "${escHtml(r.searchQuery)}"
+          </a>
+        </div>`).join('')
     : '<p>No further reading suggested.</p>';
 
   switchTab('analysis');
@@ -154,11 +143,8 @@ function renderResult(a) {
 
 function badge(isActive, trueLabel, falseLabel, warnOnTrue) {
   const warn = warnOnTrue ? isActive : !isActive;
-  const cls = isActive
-    ? warn ? 'b-warn' : 'b-good'
-    : warn ? 'b-warn' : 'b-good';
-  const label = isActive ? trueLabel : falseLabel;
-  return `<span class="badge ${cls}">${escHtml(label)}</span>`;
+  const cls = warn ? 'b-warn' : 'b-good';
+  return `<span class="badge ${cls}">${escHtml(isActive ? trueLabel : falseLabel)}</span>`;
 }
 
 function escHtml(str) {

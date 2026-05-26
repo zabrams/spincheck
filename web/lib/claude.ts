@@ -1,11 +1,11 @@
 import Anthropic from '@anthropic-ai/sdk';
-import type { BiasAnalysis } from '@/types/analysis';
 
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+export const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-const SYSTEM_PROMPT = `You are an impartial political media analyst specializing in detecting bias in American news articles. Analyze articles objectively and identify whether they show left-leaning (progressive/Democratic) or right-leaning (conservative/Republican) bias.
+export const MODEL = 'claude-haiku-4-5-20251001';
+export const MAX_CONTENT_CHARS = 12_000;
+
+export const SYSTEM_PROMPT = `You are an impartial political media analyst specializing in detecting bias in American news articles. Analyze articles objectively and identify whether they show left-leaning (progressive/Democratic) or right-leaning (conservative/Republican) bias.
 
 You must be equally critical of both left and right bias. Your analysis should be evidence-based, not opinionated.
 
@@ -49,26 +49,7 @@ Return ONLY valid JSON with no markdown formatting or code fences:
   }
 }`;
 
-export async function analyzeArticle(content: string, title?: string): Promise<BiasAnalysis> {
-  const userMessage = title
-    ? `Article Title: ${title}\n\nArticle Content:\n${content}`
-    : `Article Content:\n${content}`;
-
-  const message = await client.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 2048,
-    system: SYSTEM_PROMPT,
-    messages: [{ role: 'user', content: userMessage }],
-  });
-
-  const responseText = message.content[0].type === 'text' ? message.content[0].text : '';
-
-  // Strip markdown code fences if present
-  const cleaned = responseText.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim();
-
-  try {
-    return JSON.parse(cleaned) as BiasAnalysis;
-  } catch {
-    throw new Error('Failed to parse analysis response from Claude');
-  }
+export function truncateContent(content: string): string {
+  if (content.length <= MAX_CONTENT_CHARS) return content;
+  return content.slice(0, MAX_CONTENT_CHARS) + '\n\n[Article truncated for analysis]';
 }
