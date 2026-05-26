@@ -22,7 +22,7 @@ export default function PrivacyPage() {
             <h2 className="text-white font-semibold text-base mb-3">What SpinCheck does</h2>
             <p>
               SpinCheck is a political bias analyzer for news articles. It is available as a
-              website (<strong className="text-white">spincheck.vercel.app</strong>) and as a
+              website (<strong className="text-white">spincheck.app</strong>) and as a
               Chrome browser extension. When you submit an article, SpinCheck analyzes its
               content using Claude AI (made by Anthropic) and returns a bias assessment.
             </p>

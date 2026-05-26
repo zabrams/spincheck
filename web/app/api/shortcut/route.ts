@@ -111,6 +111,6 @@ function formatForShortcut(a: BiasAnalysis): string {
     }
   }
 
-  out += `${divider}\nspincheck.vercel.app`;
+  out += `${divider}\nspincheck.app`;
   return out.trim();
 }
