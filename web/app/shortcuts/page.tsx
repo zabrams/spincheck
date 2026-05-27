@@ -24,8 +24,8 @@ const SHORTCUTS = [
     bestFor: 'Articles in Safari',
     description:
       'When reading any article in Safari (including paywalled articles you\'re logged into), tap Share → SpinCheck. Server reads the article and returns the bias analysis.',
-    iCloudUrl: 'https://www.icloud.com/shortcuts/REPLACE_ME_SHARE',
-    available: false,
+    iCloudUrl: 'https://www.icloud.com/shortcuts/23aa791a97e0458497a5ce9cd7250e65',
+    available: true,
   },
   {
     id: 'clipboard',
@@ -34,8 +34,8 @@ const SHORTCUTS = [
     bestFor: 'Apps with custom share widgets (Substack, X, Reddit, etc.)',
     description:
       'Copy a URL or paragraph of text from any app, then tap this Shortcut from your Home Screen. It reads your clipboard and runs analysis. Universal fallback when the share sheet doesn\'t cooperate.',
-    iCloudUrl: 'https://www.icloud.com/shortcuts/REPLACE_ME_CLIPBOARD',
-    available: false,
+    iCloudUrl: 'https://www.icloud.com/shortcuts/f39ebe24dc734670b135b3db810e2100',
+    available: true,
   },
   {
     id: 'screenshot',
@@ -44,8 +44,8 @@ const SHORTCUTS = [
     bestFor: 'Tweets, paywalled content, anything on your screen',
     description:
       'Take a screenshot of a tweet, paywalled article, or any visible post. From the screenshot preview, tap Share → SpinCheck. Claude reads the image directly — bypasses copy-paste and scraping entirely.',
-    iCloudUrl: 'https://www.icloud.com/shortcuts/REPLACE_ME_SCREENSHOT',
-    available: false,
+    iCloudUrl: 'https://www.icloud.com/shortcuts/37d39f61b01245bca9851352c74f893f',
+    available: true,
   },
 ];
 
