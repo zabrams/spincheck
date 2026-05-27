@@ -94,15 +94,14 @@ export default function AboutPage() {
             the same flow with a screenshot of a tweet.
           */}
           <div className="relative w-full max-w-sm mx-auto bg-gray-50 border border-gray-200 rounded-3xl overflow-hidden shadow-sm">
-            {/* Fallback placeholder — sits underneath the img so it shows
-                only if the GIF fails to load */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400 text-sm pointer-events-none">
-              <div className="text-4xl mb-3 opacity-60">📹</div>
-              <p className="font-medium text-gray-500">Demo loading…</p>
-            </div>
-            <img
-              src="/demo.gif"
-              alt="SpinCheck demo: reading an article, tapping share, getting a bias analysis on the phone"
+            <video
+              src="/demo.mp4"
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="auto"
+              aria-label="SpinCheck demo: reading an article, tapping share, getting a bias analysis on the phone"
               className="relative w-full h-auto block"
             />
           </div>
