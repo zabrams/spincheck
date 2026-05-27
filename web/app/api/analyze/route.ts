@@ -23,7 +23,7 @@ export async function OPTIONS() {
 }
 
 export async function POST(request: NextRequest) {
-  let body: AnalyzeRequest;
+  let body: AnalyzeRequest & { skipReading?: boolean };
   try {
     body = await request.json();
   } catch {
@@ -40,6 +40,8 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const skipReading = body.skipReading === true;
+
   const userMessage = buildUserMessage({
     content: body.content,
     title: body.title,
@@ -54,22 +56,41 @@ export async function POST(request: NextRequest) {
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
 
       try {
-        // First attempt — streaming, so the client gets progress updates
+        // System prompt: keep the main one cached, append a skip-reading override
+        // as a second (uncached) block when the caller doesn't want reading suggestions.
+        // The split lets us still hit the cache on the long base prompt.
+        const systemBlocks: Array<{
+          type: 'text';
+          text: string;
+          cache_control?: { type: 'ephemeral' };
+        }> = [
+          {
+            type: 'text',
+            text: SYSTEM_PROMPT,
+            cache_control: { type: 'ephemeral' },
+          },
+        ];
+        if (skipReading) {
+          systemBlocks.push({
+            type: 'text',
+            text:
+              'CRITICAL OVERRIDE FOR THIS REQUEST: OMIT the "furtherReading" field ' +
+              'entirely from your JSON output. Do not generate any reading recommendations. ' +
+              'The reader will request sources separately. Your JSON should be valid without ' +
+              'that key present. All other fields exactly as specified.',
+          });
+        }
+
         const msgStream = client.messages.stream({
           model: MODEL,
           max_tokens: MAX_TOKENS,
-          system: [
-            {
-              type: 'text' as const,
-              text: SYSTEM_PROMPT,
-              cache_control: { type: 'ephemeral' as const },
-            },
-          ],
+          system: systemBlocks,
           messages: [{ role: 'user', content: userMessage }],
         });
 
         // Phase detection — emit a phase event when Claude starts writing each major field.
         // Order matches the JSON schema order in SYSTEM_PROMPT.
+        // When skipReading is true, the finding_sources phase never fires; that's expected.
         const PHASES = [
           { trigger: '"score"', name: 'assessing' },
           { trigger: '"analysis"', name: 'writing_analysis' },
@@ -85,7 +106,6 @@ export async function POST(request: NextRequest) {
         msgStream.on('text', (text) => {
           accumulated += text;
 
-          // Advance through phases as their trigger strings appear
           while (
             phaseIdx + 1 < PHASES.length &&
             accumulated.includes(PHASES[phaseIdx + 1].trigger)
@@ -103,9 +123,14 @@ export async function POST(request: NextRequest) {
         try {
           analysis = JSON.parse(stripJsonFences(accumulated)) as BiasAnalysis;
         } catch {
-          // JSON malformed — retry once with stricter system prompt
           send({ type: 'progress' });
           analysis = (await retryAnalyze(userMessage)) as BiasAnalysis;
+        }
+
+        // Ensure furtherReading is always an empty array if the caller skipped it
+        // (even if Claude ignored the override and included it anyway)
+        if (skipReading) {
+          analysis.furtherReading = [];
         }
 
         send({ type: 'result', data: analysis });

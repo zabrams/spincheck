@@ -28,11 +28,18 @@ async function runAnalysis(tabId, url) {
     if (!resp?.success) throw new Error('Could not read page content.');
     if (!resp.content || resp.content.length < 100) throw new Error('Page has too little text to analyze.');
 
-    // Call the SpinCheck API — read SSE stream
+    // Call the SpinCheck API — read SSE stream.
+    // skipReading=true tells the server to omit furtherReading; the popup
+    // fetches reading recommendations on-demand via /api/reading instead.
     const apiResp = await fetch(SPINCHECK_CONFIG.API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content: resp.content, title: resp.title, url }),
+      body: JSON.stringify({
+        content: resp.content,
+        title: resp.title,
+        url,
+        skipReading: true,
+      }),
     });
 
     if (!apiResp.ok || !apiResp.body) {
