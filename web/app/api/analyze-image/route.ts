@@ -87,13 +87,30 @@ export async function POST(request: NextRequest) {
       ? (body.media_type as ImageMediaType)
       : undefined;
 
-  const dataUrlMatch = imageData.match(/^data:(image\/[a-z]+);base64,(.+)$/i);
+  const dataUrlMatch = imageData.match(/^data:(image\/[a-z]+);base64,([\s\S]+)$/i);
   if (dataUrlMatch) {
     const matched = dataUrlMatch[1].toLowerCase();
     if ((VALID_MEDIA_TYPES as string[]).includes(matched)) {
       mediaType = matched as ImageMediaType;
     }
     imageData = dataUrlMatch[2];
+  }
+
+  // iOS Shortcuts' "Base64 Encode" action inserts newlines every 76 characters
+  // (RFC 2045 compliance) — strip ALL whitespace before passing to Anthropic,
+  // which rejects whitespace-laden base64 with "Invalid Base64 data".
+  imageData = imageData.replace(/\s+/g, '');
+
+  // Some encoders use URL-safe base64 (- and _) — convert back to standard.
+  imageData = imageData.replace(/-/g, '+').replace(/_/g, '/');
+
+  // Validate that what remains looks like base64 (only base64 chars + optional padding)
+  if (!/^[A-Za-z0-9+/]+=*$/.test(imageData)) {
+    return new Response(
+      'The image data isn\'t valid base64. Make sure your Shortcut has a "Base64 Encode" step ' +
+      'before the "Get Contents of URL" step, and its input is the screenshot itself.',
+      { status: 400, headers: corsHeaders }
+    );
   }
 
   if (imageData.length > MAX_IMAGE_BYTES_BASE64) {
