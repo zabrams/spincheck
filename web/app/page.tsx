@@ -196,7 +196,10 @@ export default function Home() {
       <footer className="text-center py-8 text-xs text-gray-700 border-t border-gray-800 mt-12">
         SpinCheck uses AI to detect media bias. Results are analytical, not authoritative.
         <br />
-        <span className="inline-flex gap-4 mt-2">
+        <span className="inline-flex gap-4 mt-2 flex-wrap justify-center">
+          <a href="/shortcuts" className="text-gray-500 hover:text-gray-300">
+            iOS Shortcuts
+          </a>
           <a
             href="https://github.com/zabrams/spincheck"
             target="_blank"
