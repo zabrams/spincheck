@@ -8,6 +8,7 @@ import {
   stripJsonFences,
   retryAnalyze,
 } from '@/lib/claude';
+import { fetchAndExtract } from '@/lib/extract';
 import type { AnalyzeRequest, BiasAnalysis } from '@/types/analysis';
 
 export const maxDuration = 60; // Vercel Pro: allow up to 60s for Sonnet
@@ -33,6 +34,31 @@ export async function POST(request: NextRequest) {
     });
   }
 
+  // If a URL was provided without content, fetch and extract the article server-side.
+  // Also detect when the "content" field is itself a URL (extension/shortcut behavior).
+  let extractedTitle: string | undefined;
+  const trimmedContent = (body.content ?? '').trim();
+  const contentLooksLikeUrl =
+    !!trimmedContent && /^https?:\/\/\S+$/i.test(trimmedContent) && trimmedContent.length < 2048;
+
+  if ((!trimmedContent && body.url) || contentLooksLikeUrl) {
+    const fetchUrl = contentLooksLikeUrl ? trimmedContent : body.url!;
+    try {
+      const extracted = await fetchAndExtract(fetchUrl);
+      body.content = extracted.content;
+      extractedTitle = extracted.title;
+      body.url = fetchUrl;
+    } catch (err) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: err instanceof Error ? err.message : 'Failed to fetch the article from that URL.',
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+  }
+
   if (!body.content || body.content.trim().length < 100) {
     return new Response(
       JSON.stringify({ success: false, error: 'Article content must be at least 100 characters' }),
@@ -44,7 +70,7 @@ export async function POST(request: NextRequest) {
 
   const userMessage = buildUserMessage({
     content: body.content,
-    title: body.title,
+    title: body.title || extractedTitle,
     url: body.url,
   });
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import ArticleInput from '@/components/ArticleInput';
+import ArticleInput, { type AnalyzeInput } from '@/components/ArticleInput';
 import BiasResult from '@/components/BiasResult';
 import type { BiasAnalysis } from '@/types/analysis';
 
@@ -30,7 +30,7 @@ export default function Home() {
   const [phase, setPhase] = useState<string>('reading');
   const [error, setError] = useState<string | null>(null);
 
-  async function handleAnalyze(content: string, title?: string) {
+  async function handleAnalyze(input: AnalyzeInput) {
     setLoading(true);
     setPhase('reading');
     setError(null);
@@ -40,7 +40,7 @@ export default function Home() {
       const res = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content, title }),
+        body: JSON.stringify(input),
       });
 
       if (!res.ok || !res.body) {
