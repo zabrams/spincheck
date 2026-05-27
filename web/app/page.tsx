@@ -5,27 +5,33 @@ import ArticleInput from '@/components/ArticleInput';
 import BiasResult from '@/components/BiasResult';
 import type { BiasAnalysis } from '@/types/analysis';
 
-const PHASE_MESSAGES: Record<string, string> = {
-  reading: 'Reading the article…',
-  assessing: 'Assessing political bias…',
-  writing_analysis: 'Writing detailed analysis…',
-  gathering_evidence: 'Gathering evidence from the text…',
-  finding_omissions: 'Looking for what’s missing…',
-  finding_sources: 'Finding sources for balance…',
-  perspectives: 'Steel-manning both sides…',
-  common_ground: 'Looking for common ground…',
-};
+interface Phase {
+  id: string;
+  label: string;
+  seconds: number;
+}
+
+// Phase order matches the server's JSON schema output order in SYSTEM_PROMPT.
+// Estimated seconds are tuned for Sonnet 4.6.
+const PHASES: Phase[] = [
+  { id: 'reading',            label: 'Reading the article',          seconds: 3  },
+  { id: 'assessing',          label: 'Assessing political bias',     seconds: 4  },
+  { id: 'writing_analysis',   label: 'Writing detailed analysis',    seconds: 12 },
+  { id: 'gathering_evidence', label: 'Gathering evidence from the text', seconds: 6 },
+  { id: 'finding_omissions',  label: 'Looking for what\'s missing',  seconds: 4  },
+  { id: 'finding_sources',    label: 'Finding sources for balance',  seconds: 5  },
+  { id: 'perspectives',       label: 'Steel-manning both sides',     seconds: 7  },
+  { id: 'common_ground',      label: 'Looking for common ground',    seconds: 3  },
+];
 
 export default function Home() {
   const [analysis, setAnalysis] = useState<BiasAnalysis | null>(null);
   const [loading, setLoading] = useState(false);
-  const [progress, setProgress] = useState(0);
   const [phase, setPhase] = useState<string>('reading');
   const [error, setError] = useState<string | null>(null);
 
   async function handleAnalyze(content: string, title?: string) {
     setLoading(true);
-    setProgress(0);
     setPhase('reading');
     setError(null);
     setAnalysis(null);
@@ -44,7 +50,6 @@ export default function Home() {
 
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
-      let progressCount = 0;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -60,19 +65,15 @@ export default function Home() {
             continue;
           }
 
-          if (event.type === 'progress') {
-            progressCount++;
-            // Asymptotic curve toward 90% — snaps to 100 on result
-            setProgress(Math.min(90, Math.round(90 * (1 - Math.exp(-progressCount / 15)))));
-          } else if (event.type === 'phase' && event.phase) {
+          if (event.type === 'phase' && event.phase) {
             setPhase(event.phase);
           } else if (event.type === 'result' && event.data) {
-            setProgress(100);
             setAnalysis(event.data);
             setLoading(false);
           } else if (event.type === 'error') {
             throw new Error(event.error || 'Analysis failed');
           }
+          // 'progress' events ignored — the timeline UI is the indicator
         }
       }
     } catch (err) {
@@ -80,6 +81,11 @@ export default function Home() {
       setLoading(false);
     }
   }
+
+  const currentPhaseIdx = Math.max(0, PHASES.findIndex((p) => p.id === phase));
+  const remainingSeconds = PHASES
+    .slice(currentPhaseIdx)
+    .reduce((sum, p) => sum + p.seconds, 0);
 
   return (
     <main className="min-h-screen">
@@ -107,20 +113,74 @@ export default function Home() {
         <ArticleInput onAnalyze={handleAnalyze} loading={loading} />
 
         {loading && (
-          <div className="mt-4">
-            <div className="flex justify-between text-xs text-gray-400 mb-1.5">
-              <span key={phase} className="animate-in fade-in slide-in-from-left-1 duration-300">
-                <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500 mr-2 animate-pulse" />
-                {PHASE_MESSAGES[phase] || 'Analyzing…'}
+          <div className="mt-6 bg-gray-900/60 border border-gray-800 rounded-xl p-5 animate-in fade-in duration-300">
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-800">
+              <h3 className="text-sm font-semibold text-white flex items-center">
+                <span className="inline-block w-2 h-2 rounded-full bg-blue-500 mr-2 animate-pulse" />
+                Analyzing article
+              </h3>
+              <span className="text-xs text-gray-500 tabular-nums">
+                ~{remainingSeconds}s remaining
               </span>
-              <span className="text-gray-500 tabular-nums">{progress}%</span>
             </div>
-            <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-blue-500 rounded-full transition-all duration-300 ease-out"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
+
+            <ol className="relative">
+              {PHASES.map((p, i) => {
+                const isDone = i < currentPhaseIdx;
+                const isCurrent = i === currentPhaseIdx;
+                const isLast = i === PHASES.length - 1;
+
+                return (
+                  <li key={p.id} className="flex items-start gap-3 relative pb-3.5 last:pb-0">
+                    {/* Vertical connector to next step */}
+                    {!isLast && (
+                      <span
+                        className={`absolute left-2 top-5 bottom-0 w-px transition-colors duration-500 ${
+                          isDone ? 'bg-green-500/40' : 'bg-gray-800'
+                        }`}
+                        aria-hidden="true"
+                      />
+                    )}
+
+                    {/* Status marker */}
+                    <span className="relative z-10 flex-shrink-0 w-4 h-4 flex items-center justify-center mt-0.5">
+                      {isDone ? (
+                        <span className="w-4 h-4 rounded-full bg-green-500/20 border border-green-500/60 flex items-center justify-center">
+                          <svg className="w-2.5 h-2.5 text-green-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </span>
+                      ) : isCurrent ? (
+                        <span className="relative inline-flex h-4 w-4 items-center justify-center" aria-label="Current step">
+                          <span className="absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-50 animate-ping" />
+                          <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500 ring-2 ring-blue-500/30" />
+                        </span>
+                      ) : (
+                        <span className="w-2 h-2 rounded-full bg-gray-700" aria-hidden="true" />
+                      )}
+                    </span>
+
+                    {/* Label + estimated time */}
+                    <div className="flex-1 flex items-center justify-between gap-3 min-h-[16px]">
+                      <span
+                        className={`text-sm transition-colors duration-300 ${
+                          isDone ? 'text-gray-500' : isCurrent ? 'text-white font-medium' : 'text-gray-600'
+                        }`}
+                      >
+                        {p.label}
+                      </span>
+                      <span
+                        className={`text-xs tabular-nums transition-colors duration-300 ${
+                          isCurrent ? 'text-blue-400 font-medium' : isDone ? 'text-gray-700' : 'text-gray-600'
+                        }`}
+                      >
+                        ~{p.seconds}s
+                      </span>
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
           </div>
         )}
 
