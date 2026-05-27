@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import ArticleInput, { type AnalyzeInput } from '@/components/ArticleInput';
 import BiasResult from '@/components/BiasResult';
 import type { BiasAnalysis } from '@/types/analysis';
@@ -89,7 +90,13 @@ export default function Home() {
 
   return (
     <main className="min-h-screen">
-      <div className="max-w-3xl mx-auto px-4 py-12">
+      {/* Top nav — minimal, doesn't compete with the input */}
+      <nav className="flex items-center justify-end gap-5 px-4 py-4 max-w-3xl mx-auto text-xs">
+        <Link href="/about" className="text-gray-500 hover:text-gray-200 transition-colors">About</Link>
+        <Link href="/shortcuts" className="text-gray-500 hover:text-gray-200 transition-colors">iOS</Link>
+      </nav>
+
+      <div className="max-w-3xl mx-auto px-4 pb-12">
         <header className="text-center mb-10">
           <div className="flex items-center justify-center gap-3 mb-3">
             <span className="text-4xl" role="img" aria-label="scales">⚖️</span>
@@ -100,7 +107,7 @@ export default function Home() {
             with evidence, balanced perspectives, and steel man arguments for both sides.
           </p>
           <div className="mt-3 flex items-center justify-center gap-4 text-xs text-gray-600">
-            <span>0–3 scale</span>
+            <span>0–10 scale</span>
             <span>·</span>
             <span className="text-blue-500">Left</span>
             <span>/</span>
