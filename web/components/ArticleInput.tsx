@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 export interface AnalyzeInput {
   url?: string;
@@ -24,6 +24,7 @@ export default function ArticleInput({ onAnalyze, loading }: Props) {
   const [content, setContent] = useState('');
   const [title, setTitle] = useState('');
   const [hint, setHint] = useState<string | null>(null);
+  const urlInputRef = useRef<HTMLInputElement>(null);
 
   function submit(payload: AnalyzeInput) {
     onAnalyze(payload);
@@ -46,23 +47,45 @@ export default function ArticleInput({ onAnalyze, loading }: Props) {
 
   async function pasteAndAnalyze() {
     setHint(null);
+
+    // Try the async Clipboard API first. Works on Chrome/Firefox/Edge when the page
+    // has permission. Safari (especially iOS) often returns empty string silently
+    // when it doesn't — so we fall back to focusing the input and letting the user
+    // paste manually (the onPaste handler auto-submits if the pasted text is a URL).
     try {
       const text = (await navigator.clipboard.readText()).trim();
-      if (!text) {
-        setHint('Your clipboard is empty. Copy a URL first.');
+      if (text) {
+        if (looksLikeUrl(text)) {
+          setUrl(text);
+          submit({ url: text });
+        } else {
+          setUrl(text);
+          setHint('That doesn\'t look like a URL. Use the "paste article text instead" option below.');
+        }
         return;
       }
-      if (looksLikeUrl(text)) {
-        setUrl(text);
-        submit({ url: text });
-      } else {
-        // Not a URL — paste into the field so the user can see it
-        setUrl(text);
-        setHint('That doesn\'t look like a URL. Paste article text using the option below.');
-      }
     } catch {
-      setHint('Couldn\'t read your clipboard. Paste manually with Cmd/Ctrl+V into the box above.');
+      // Permission denied / unsupported — fall through to manual-paste fallback
     }
+
+    // Fallback: focus the URL input so the user can paste it themselves.
+    // The onPaste handler on the input will auto-submit once a URL is pasted.
+    urlInputRef.current?.focus();
+    setHint('Tap the field above and paste your URL — Cmd/Ctrl+V on desktop, or long-press → Paste on mobile.');
+  }
+
+  function handleUrlPaste(e: React.ClipboardEvent<HTMLInputElement>) {
+    const pasted = e.clipboardData.getData('text').trim();
+    if (pasted && looksLikeUrl(pasted)) {
+      // Take over the paste so we control the field value, then submit immediately
+      e.preventDefault();
+      setUrl(pasted);
+      setHint(null);
+      // Defer one tick so React state updates before submit
+      setTimeout(() => submit({ url: pasted }), 0);
+    }
+    // If pasted text isn't a URL, let the default paste behavior happen
+    // (fills the field, user can then switch to text mode if they want)
   }
 
   function handleTextSubmit(e: React.FormEvent) {
@@ -131,10 +154,12 @@ export default function ArticleInput({ onAnalyze, loading }: Props) {
   return (
     <form onSubmit={handleUrlSubmit} className="space-y-3">
       <input
+        ref={urlInputRef}
         type="url"
         placeholder="Paste an article URL — e.g. https://nytimes.com/…"
         value={url}
         onChange={(e) => { setUrl(e.target.value); setHint(null); }}
+        onPaste={handleUrlPaste}
         autoFocus
         spellCheck={false}
         autoComplete="url"
