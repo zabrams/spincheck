@@ -129,6 +129,52 @@ export default function ShortcutsPage() {
           </p>
         </section>
 
+        {/* Pin to Share Sheet */}
+        <section className="mt-10 pt-8 border-t border-gray-200">
+          <h2 className="text-lg font-bold text-gray-900 mb-2">
+            📌 Pin SpinCheck to the top of your Share Sheet
+          </h2>
+          <p className="text-sm text-gray-600 mb-4 leading-relaxed">
+            By default, the SpinCheck Shortcuts appear near the bottom of the iOS Share Sheet
+            and require scrolling. Pin them to <strong className="text-gray-900">Favorites</strong> so
+            they show up at the top — one tap from any Share button.
+          </p>
+
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+              On your iPhone or iPad
+            </p>
+            <ol className="list-decimal list-inside space-y-2 text-sm text-gray-700">
+              <li>Open any article in Safari (or take a screenshot of a tweet).</li>
+              <li>Tap the <strong className="text-gray-900">Share</strong> button.</li>
+              <li>Scroll down past the apps row and the action list to the very bottom.</li>
+              <li>Tap <strong className="text-gray-900">Edit Actions…</strong></li>
+              <li>
+                Under the <em>Suggestions</em> or <em>Shortcuts</em> section, find{' '}
+                <strong className="text-gray-900">SpinCheck (URL)</strong> and{' '}
+                <strong className="text-gray-900">SpinCheck (Image)</strong>.
+              </li>
+              <li>
+                Tap the green <strong className="text-green-700">⊕</strong> next to each to add to
+                Favorites. (If you don&apos;t see a + button, tap the star or pin icon — naming
+                varies by iOS version.)
+              </li>
+              <li>Drag them to the top of the list using the handle on the right.</li>
+              <li>Tap <strong className="text-gray-900">Done</strong>.</li>
+            </ol>
+            <p className="text-xs text-gray-500 mt-4 leading-relaxed">
+              Now whenever you tap Share — on an article, a tweet screenshot, or anything else —
+              SpinCheck appears at the top of the action list for instant access.
+            </p>
+          </div>
+
+          <p className="text-xs text-gray-500 mt-3">
+            Note: the <strong className="text-gray-700">SpinCheck (Clipboard)</strong> Shortcut
+            doesn&apos;t appear in the Share Sheet — it&apos;s designed to be launched from your
+            Home Screen instead (long-press it in the Shortcuts app → Add to Home Screen).
+          </p>
+        </section>
+
         {/* Other platforms */}
         <section className="mt-10 pt-8 border-t border-gray-200">
           <h2 className="text-lg font-bold text-gray-900 mb-3">Not on iOS?</h2>
