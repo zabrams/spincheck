@@ -15,7 +15,7 @@ export default function BiasResult({ analysis }: Props) {
 
   const { score, direction, confidence } = analysis;
 
-  const scoreLabel = ['No Bias', 'Slightly Biased', 'Moderately Biased', 'Strongly Biased'][score];
+  const scoreLabel = getScoreLabel(score);
   const directionLabel =
     direction === 'none' ? '' : direction === 'left' ? ' — Leans Left' : ' — Leans Right';
 
@@ -273,6 +273,16 @@ export default function BiasResult({ analysis }: Props) {
       </div>
     </div>
   );
+}
+
+// Map 0-10 score to a human label bucket
+function getScoreLabel(score: number): string {
+  if (score <= 0) return 'No Bias';
+  if (score <= 2) return 'Slight Bias';
+  if (score <= 4) return 'Mild Bias';
+  if (score <= 6) return 'Moderate Bias';
+  if (score <= 8) return 'Strong Bias';
+  return 'Extreme Bias';
 }
 
 function Badge({

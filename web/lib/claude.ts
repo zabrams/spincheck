@@ -45,19 +45,35 @@ STEP 2: Assess TREATMENT along these dimensions:
 6. Headline — Does it overstate, sensationalize, or misrepresent what the body reports?
 
 ═══════════════════════════════════════════════
-SCORING — CONCRETE CALIBRATION
+SCORING — 0 TO 10 SCALE PER SIDE
 ═══════════════════════════════════════════════
 
-Use these real-world reference points:
+USE THE FULL 0-10 RANGE. Most opinion pieces sit at 5-8, not 1-2. Do not default to low scores out of caution — the scale is designed for nuance.
 
-- 0: Reuters wire copy, AP straight news, transcripts, neutral data reporting. NOT just "no opinion stated" — also genuinely balanced sourcing and framing.
-- 1: NYT/WSJ news section pieces on contested topics; mostly balanced sourcing with mild framing tilt; pieces labeled "analysis" but largely fair.
-- 2: Pieces with a clear lean that still acknowledge counter-views; politely-worded opinion columns; news framing that consistently favors one side without being inflammatory.
-- 3: Cable news opinion (Hannity, Maddow), explicit advocacy outlets (Mother Jones, Daily Wire, Breitbart, Jacobin), tabloid framing, pieces that dismiss or ridicule the opposing side.
+CALIBRATION ANCHORS:
+- 0: Reuters/AP wire copy. Pure facts, balanced sourcing, no detectable framing.
+- 1: Mostly straight news with a single word choice or phrasing that hints at a lean.
+- 2: News piece on a contested topic that subtly favors one side in selection or emphasis, but quotes multiple perspectives.
+- 3: Major-outlet "news analysis" with mild framing tilt while still presenting opposing views fairly.
+- 4: Civil opinion column that acknowledges counter-arguments while arguing a clear position.
+- 5: Standard op-ed at NYT/WSJ/WaPo opinion — clear position, limited counter-perspective, polite tone.
+- 6: Opinion or analysis with clear lean AND dismissive treatment of opposing views; charged but not inflammatory language.
+- 7: Cable-news-style opinion (Hannity, Maddow); consistently frames the other side as unreasonable or acting in bad faith.
+- 8: Advocacy-positioned outlets (The Free Press, Mother Jones, Reason) — mostly factual but framing reliably serves a political project.
+- 9: Hard-edged advocacy (Breitbart, Jacobin, Daily Wire) — selective facts, frequent strawmen, mocking tone toward opposing side.
+- 10: Propaganda — invented or grossly distorted facts, dehumanizing language, no recognition of opposing view as legitimate.
+
+ANTI-CONSERVATISM HEURISTICS — apply these floors:
+- Clear editorial position with mostly one-sided sourcing → AT LEAST 5
+- Mocks or dismisses opposing views → AT LEAST 7
+- Uses inflammatory or dehumanizing language → AT LEAST 8
+- Article is explicitly an opinion piece taking a side → AT LEAST 4 (even when civil)
+
+A "balanced" piece with multiple viewpoints can still score 3-4 if the framing or word choice consistently advantages one side.
 
 CRITICAL CONSISTENCY RULE:
 - If score is 0, direction MUST be "none".
-- If score is 1, 2, or 3, direction MUST be "left" or "right" — NEVER "none".
+- If score is 1 through 10, direction MUST be "left" or "right" — NEVER "none".
 - Conversely: if direction is "none", score MUST be 0.
 - Never return a contradiction like score=1 with direction="none". If the article is biased enough to score 1+, you must commit to a direction.
 
@@ -201,16 +217,31 @@ TWO-STEP DETECTION
 2. Otherwise, assess treatment.
 
 ═══════════════════════════════════════════════
-SCORING
+SCORING — 0 TO 10 PER SIDE
 ═══════════════════════════════════════════════
-- 0: Reuters/AP straight news. Balanced.
-- 1: Mostly balanced with mild framing tilt.
-- 2: Clear lean while still acknowledging counter-views; politely-worded opinion.
-- 3: Cable opinion, advocacy outlets, dismissive of opposing side.
+USE THE FULL 0-10 RANGE. Most opinion pieces sit at 5-8, not 1-2.
+
+ANCHORS:
+- 0: Reuters/AP wire — pure facts, balanced sourcing.
+- 1: Straight news with a single word choice that hints at lean.
+- 2: News piece that subtly favors one side via emphasis.
+- 3: "News analysis" with mild framing tilt, still fair to opposing views.
+- 4: Civil opinion column acknowledging counter-arguments.
+- 5: Standard major-outlet op-ed — clear position, limited counter-perspective.
+- 6: Opinion with clear lean AND dismissive treatment of opposing views.
+- 7: Cable-opinion style (Hannity, Maddow); frames other side as unreasonable.
+- 8: Advocacy outlets (Free Press, Mother Jones) — factual but framing reliably serves a project.
+- 9: Hard-edged advocacy (Breitbart, Jacobin) — selective facts, mocking tone.
+- 10: Propaganda — distorted facts, dehumanizing language.
+
+FLOORS — do not score below these when triggered:
+- Clear editorial position with one-sided sourcing → AT LEAST 5
+- Mocks or dismisses opposing views → AT LEAST 7
+- Inflammatory/dehumanizing language → AT LEAST 8
 
 CRITICAL CONSISTENCY RULE:
 - score 0 → direction MUST be "none"
-- score 1, 2, or 3 → direction MUST be "left" or "right" (never "none")
+- score 1-10 → direction MUST be "left" or "right" (never "none")
 
 ═══════════════════════════════════════════════
 DIRECTION (current American politics — reason from real positions)

@@ -1,5 +1,6 @@
 export interface BiasAnalysis {
-  score: 0 | 1 | 2 | 3;
+  /** 0-10 scale. 0 = no bias; 10 = extreme propaganda. Direction encodes left/right. */
+  score: number;
   direction: 'left' | 'right' | 'none';
   confidence: 'low' | 'medium' | 'high';
   summary: string;

@@ -122,9 +122,16 @@ type ShortcutAnalysis = Pick<
   | 'perspectives'
 >;
 
-function formatForShortcut(a: ShortcutAnalysis): string {
-  const scoreLabels = ['No Bias', 'Slightly Biased', 'Moderately Biased', 'Strongly Biased'];
+function getScoreLabel(score: number): string {
+  if (score <= 0) return 'No Bias';
+  if (score <= 2) return 'Slight Bias';
+  if (score <= 4) return 'Mild Bias';
+  if (score <= 6) return 'Moderate Bias';
+  if (score <= 8) return 'Strong Bias';
+  return 'Extreme Bias';
+}
 
+function formatForShortcut(a: ShortcutAnalysis): string {
   const scoreStr =
     a.direction === 'left' ? `${a.score}L`
     : a.direction === 'right' ? `${a.score}R`
@@ -135,7 +142,7 @@ function formatForShortcut(a: ShortcutAnalysis): string {
     : a.direction === 'right' ? ' — Leans Right'
     : '';
 
-  const scoreLine = `${scoreStr} · ${scoreLabels[a.score]}${dirLabel}`;
+  const scoreLine = `${scoreStr} · ${getScoreLabel(a.score)}${dirLabel}`;
 
   const tagLines = [
     a.isEditorial ? '📝 Editorial' : '📰 Factual Reporting',

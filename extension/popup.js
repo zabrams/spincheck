@@ -128,19 +128,29 @@ $('retry-btn').addEventListener('click', async () => {
   showState('idle');
 });
 
+function getScoreLabel(score) {
+  if (score <= 0) return 'No Bias';
+  if (score <= 2) return 'Slight Bias';
+  if (score <= 4) return 'Mild Bias';
+  if (score <= 6) return 'Moderate Bias';
+  if (score <= 8) return 'Strong Bias';
+  return 'Extreme Bias';
+}
+
 function renderResult(a) {
   const dir = a.direction;
   const score = a.score;
   const scoreStr = dir === 'left' ? `${score}L` : dir === 'right' ? `${score}R` : `${score}`;
-  const labels = ['No Bias', 'Slightly Biased', 'Moderately Biased', 'Strongly Biased'];
   const dirLabel = dir === 'none' ? '' : dir === 'left' ? ' — Leans Left' : ' — Leans Right';
 
+  const scoreText = getScoreLabel(score);
   $('score-value').textContent = scoreStr;
   $('score-value').className = `score-value ${dir}`;
-  $('score-label').textContent = labels[score] + dirLabel;
+  $('score-label').textContent = scoreText + dirLabel;
 
-  const val = dir === 'none' ? 0 : dir === 'left' ? -score : score;
-  const pct = ((val + 3) / 6) * 100;
+  const clamped = Math.max(0, Math.min(10, score));
+  const val = dir === 'none' ? 0 : dir === 'left' ? -clamped : clamped;
+  const pct = ((val + 10) / 20) * 100;
   const dot = $('gauge-dot');
   dot.style.left = `${pct}%`;
   dot.style.backgroundColor = dir === 'left' ? '#3b82f6' : dir === 'right' ? '#ef4444' : '#6b7280';
@@ -157,7 +167,7 @@ function renderResult(a) {
 
   // Append confidence pill to score label
   if (a.confidence) {
-    $('score-label').innerHTML = `${escHtml(labels[score] + dirLabel)} <span class="conf-pill conf-${a.confidence}">${a.confidence}</span>`;
+    $('score-label').innerHTML = `${escHtml(scoreText + dirLabel)} <span class="conf-pill conf-${a.confidence}">${a.confidence}</span>`;
   }
 
   const framingHtml = a.framingEvidence?.length
