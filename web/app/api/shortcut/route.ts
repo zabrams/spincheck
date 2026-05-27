@@ -9,7 +9,6 @@ import {
   retryAnalyze,
 } from '@/lib/claude';
 import { fetchAndExtract } from '@/lib/extract';
-import { encodeShareData } from '@/lib/share';
 import type { BiasAnalysis } from '@/types/analysis';
 
 export const maxDuration = 60;
@@ -105,8 +104,7 @@ export async function POST(request: NextRequest) {
       analysis = (await retryAnalyze(userMessage)) as BiasAnalysis;
     }
 
-    const viewUrl = encodeShareData({ analysis, url, title });
-    return new Response(formatForShortcut(analysis, viewUrl), {
+    return new Response(formatForShortcut(analysis), {
       headers: { ...corsHeaders, 'Content-Type': 'text/plain; charset=utf-8' },
     });
   } catch (err) {
@@ -118,7 +116,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function formatForShortcut(a: BiasAnalysis, viewUrl: string): string {
+function formatForShortcut(a: BiasAnalysis): string {
   const scoreLabels = ['No Bias', 'Slightly Biased', 'Moderately Biased', 'Strongly Biased'];
 
   // FIX: always show the actual score; only append L/R suffix when direction has one
@@ -178,6 +176,6 @@ function formatForShortcut(a: BiasAnalysis, viewUrl: string): string {
     });
   }
 
-  out += `\n${D}\n🔗 View full analysis on the web:\n${viewUrl}`;
+  out += `\n${D}\nspincheck.app`;
   return out.trim();
 }
