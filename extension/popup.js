@@ -210,18 +210,84 @@ function renderResult(a) {
       ${opposingHtml}`;
   }
 
-  $('section-reading').innerHTML = a.furtherReading?.length
-    ? a.furtherReading.map((r) => `
+  // Reading is now fetched on-demand. Show a button until the user requests it.
+  renderReadingSection(a);
+
+  switchTab('analysis');
+  showState('result');
+}
+
+function renderReadingSection(a) {
+  if (a.furtherReading && a.furtherReading.length) {
+    // Already loaded — render directly
+    $('section-reading').innerHTML = a.furtherReading.map((r) => `
         <div class="read-item">
           <div class="read-desc">${escHtml(r.description)}</div>
           <a class="read-link" href="https://www.google.com/search?q=${encodeURIComponent(r.searchQuery)}" target="_blank">
             🔍 "${escHtml(r.searchQuery)}"
           </a>
-        </div>`).join('')
-    : '<p>No further reading suggested.</p>';
+        </div>`).join('');
+    return;
+  }
 
-  switchTab('analysis');
-  showState('result');
+  // Show the load button
+  $('section-reading').innerHTML = `
+    <div style="text-align:center;padding:12px 0">
+      <p style="color:#94a3b8;font-size:12px;margin-bottom:10px">
+        Find sources from across the political spectrum to round out your perspective on this topic.
+      </p>
+      <button id="load-reading-btn" class="btn-primary" style="font-size:12px;padding:8px 14px">
+        🔍 Find balanced sources
+      </button>
+      <p id="reading-error" style="color:#f87171;font-size:11px;margin-top:8px;display:none"></p>
+    </div>`;
+
+  $('load-reading-btn').addEventListener('click', () => loadReading(a));
+}
+
+async function loadReading(a) {
+  const btn = $('load-reading-btn');
+  const errEl = $('reading-error');
+  btn.disabled = true;
+  btn.textContent = 'Finding sources…';
+  errEl.style.display = 'none';
+
+  try {
+    const apiBase = SPINCHECK_CONFIG.API_URL.replace(/\/api\/.*$/, '');
+    const res = await fetch(`${apiBase}/api/reading`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        topic: a.perspectives?.topic || '',
+        direction: a.direction,
+        summary: a.summary,
+      }),
+    });
+
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Failed to load reading');
+
+    // Cache on the analysis object and re-render
+    a.furtherReading = data.data || [];
+
+    // Update cached storage so re-opening the popup has it
+    if (currentUrl) {
+      chrome.storage.local.get(`sc_${currentUrl}`).then((stored) => {
+        const entry = stored[`sc_${currentUrl}`];
+        if (entry?.status === 'complete') {
+          entry.data.furtherReading = a.furtherReading;
+          chrome.storage.local.set({ [`sc_${currentUrl}`]: entry });
+        }
+      });
+    }
+
+    renderReadingSection(a);
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = '🔍 Find balanced sources';
+    errEl.textContent = err.message || 'Could not load sources. Try again.';
+    errEl.style.display = 'block';
+  }
 }
 
 function badge(isActive, trueLabel, falseLabel, warnOnTrue) {

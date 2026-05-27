@@ -1,23 +1,16 @@
 import { NextRequest } from 'next/server';
 import {
   client,
-  MODEL,
-  MAX_TOKENS,
-  SYSTEM_PROMPT,
+  FAST_MODEL,
+  FAST_MAX_TOKENS,
+  SHORTCUT_SYSTEM_PROMPT,
   buildUserMessage,
   stripJsonFences,
-  retryAnalyze,
 } from '@/lib/claude';
 import { fetchAndExtract } from '@/lib/extract';
 import type { BiasAnalysis } from '@/types/analysis';
 
 export const maxDuration = 60;
-
-/** Detect whether a string looks like a URL (so the Shortcut can send either text or URL). */
-function looksLikeUrl(s: string): boolean {
-  const trimmed = s.trim();
-  return /^https?:\/\/\S+$/i.test(trimmed) && trimmed.length < 2048;
-}
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -27,6 +20,11 @@ const corsHeaders = {
 
 export async function OPTIONS() {
   return new Response(null, { status: 204, headers: corsHeaders });
+}
+
+function looksLikeUrl(s: string): boolean {
+  const trimmed = s.trim();
+  return /^https?:\/\/\S+$/i.test(trimmed) && trimmed.length < 2048;
 }
 
 export async function POST(request: NextRequest) {
@@ -43,8 +41,6 @@ export async function POST(request: NextRequest) {
     return new Response('Invalid request body', { status: 400, headers: corsHeaders });
   }
 
-  // If the Shortcut sent a URL (either explicitly as `url`, or as `content` because
-  // Safari's Share Sheet shares a URL) — fetch the page and extract the article text.
   if (!content && url) {
     try {
       const extracted = await fetchAndExtract(url);
@@ -57,7 +53,6 @@ export async function POST(request: NextRequest) {
       );
     }
   } else if (content && looksLikeUrl(content)) {
-    // Shortcut sent the URL in the `content` field — treat it as a URL
     const sharedUrl = content.trim();
     try {
       const extracted = await fetchAndExtract(sharedUrl);
@@ -82,27 +77,22 @@ export async function POST(request: NextRequest) {
   const userMessage = buildUserMessage({ content, title, url });
 
   try {
-    let analysis: BiasAnalysis;
-    try {
-      const message = await client.messages.create({
-        model: MODEL,
-        max_tokens: MAX_TOKENS,
-        system: [
-          {
-            type: 'text' as const,
-            text: SYSTEM_PROMPT,
-            cache_control: { type: 'ephemeral' as const },
-          },
-        ],
-        messages: [{ role: 'user', content: userMessage }],
-      });
+    // Use FAST_MODEL (Haiku) + slim prompt for <10s response time
+    const message = await client.messages.create({
+      model: FAST_MODEL,
+      max_tokens: FAST_MAX_TOKENS,
+      system: [
+        {
+          type: 'text' as const,
+          text: SHORTCUT_SYSTEM_PROMPT,
+          cache_control: { type: 'ephemeral' as const },
+        },
+      ],
+      messages: [{ role: 'user', content: userMessage }],
+    });
 
-      const raw = message.content[0].type === 'text' ? message.content[0].text : '';
-      analysis = JSON.parse(stripJsonFences(raw)) as BiasAnalysis;
-    } catch {
-      // Retry once with stricter JSON-only instruction
-      analysis = (await retryAnalyze(userMessage)) as BiasAnalysis;
-    }
+    const raw = message.content[0].type === 'text' ? message.content[0].text : '';
+    const analysis = JSON.parse(stripJsonFences(raw)) as ShortcutAnalysis;
 
     return new Response(formatForShortcut(analysis), {
       headers: { ...corsHeaders, 'Content-Type': 'text/plain; charset=utf-8' },
@@ -116,10 +106,25 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function formatForShortcut(a: BiasAnalysis): string {
+// Slim shape returned by SHORTCUT_SYSTEM_PROMPT — no analysis/framingEvidence/furtherReading
+type ShortcutAnalysis = Pick<
+  BiasAnalysis,
+  | 'score'
+  | 'direction'
+  | 'confidence'
+  | 'summary'
+  | 'isEditorial'
+  | 'presentsBothSides'
+  | 'usesEmotionalLanguage'
+  | 'hasSelectiveSourcing'
+  | 'hasMisleadingHeadline'
+  | 'omissionEvidence'
+  | 'perspectives'
+>;
+
+function formatForShortcut(a: ShortcutAnalysis): string {
   const scoreLabels = ['No Bias', 'Slightly Biased', 'Moderately Biased', 'Strongly Biased'];
 
-  // FIX: always show the actual score; only append L/R suffix when direction has one
   const scoreStr =
     a.direction === 'left' ? `${a.score}L`
     : a.direction === 'right' ? `${a.score}R`
@@ -132,7 +137,6 @@ function formatForShortcut(a: BiasAnalysis): string {
 
   const scoreLine = `${scoreStr} · ${scoreLabels[a.score]}${dirLabel}`;
 
-  // All 5 pills, with both states (matches Chrome extension behavior)
   const tagLines = [
     a.isEditorial ? '📝 Editorial' : '📰 Factual Reporting',
     a.presentsBothSides ? '✓ Presents Both Sides' : '✗ One-Sided',
@@ -164,15 +168,8 @@ function formatForShortcut(a: BiasAnalysis): string {
 
   if (a.omissionEvidence.length > 0) {
     out += `\n${D}\n🎯 WHAT'S MISSING\n${D}\n`;
-    a.omissionEvidence.forEach((e, i) => {
+    a.omissionEvidence.slice(0, 3).forEach((e, i) => {
       out += `${i + 1}. ${e}\n`;
-    });
-  }
-
-  if (a.furtherReading.length > 0) {
-    out += `\n${D}\n📚 FURTHER READING\n${D}\n`;
-    a.furtherReading.forEach((r, i) => {
-      out += `${i + 1}. ${r.description}\n   Search: "${r.searchQuery}"\n\n`;
     });
   }
 
