@@ -3,7 +3,7 @@
   "name": "SpinCheck",
   "version": "1.1.0",
   "description": "Detect political bias in news articles you're reading — powered by Claude AI.",
-  "permissions": ["activeTab", "storage"],
+  "permissions": ["activeTab", "storage", "scripting"],
   "background": {
     "service_worker": "background.js"
   },
@@ -22,12 +22,5 @@
       "48": "icons/icon48.png",
       "128": "icons/icon128.png"
     }
-  },
-  "content_scripts": [
-    {
-      "matches": ["<all_urls>"],
-      "js": ["content.js"],
-      "run_at": "document_idle"
-    }
-  ]
+  }
 }

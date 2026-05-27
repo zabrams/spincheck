@@ -17,16 +17,25 @@ async function runAnalysis(tabId, url) {
   });
 
   try {
-    // Extract article content via content script
+    // Inject content.js on-demand using activeTab + scripting permissions.
+    // This is more secure than a passive content script with <all_urls>:
+    // we only access the page when the user explicitly clicks the icon.
     let resp;
     try {
-      resp = await chrome.tabs.sendMessage(tabId, { action: 'getArticleContent' });
-    } catch {
-      throw new Error('Cannot read page. Try refreshing first.');
+      const results = await chrome.scripting.executeScript({
+        target: { tabId },
+        files: ['content.js'],
+      });
+      resp = results?.[0]?.result;
+    } catch (err) {
+      throw new Error(
+        'Cannot read this page. ' +
+          (err?.message || 'It may be a Chrome internal page (chrome://) or otherwise restricted.')
+      );
     }
 
-    if (!resp?.success) throw new Error('Could not read page content.');
-    if (!resp.content || resp.content.length < 100) throw new Error('Page has too little text to analyze.');
+    if (!resp || !resp.content) throw new Error('Could not extract article content from this page.');
+    if (resp.content.length < 100) throw new Error('Page has too little text to analyze.');
 
     // Call the SpinCheck API — read SSE stream.
     // skipReading=true tells the server to omit furtherReading; the popup
