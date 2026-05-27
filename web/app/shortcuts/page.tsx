@@ -129,6 +129,84 @@ export default function ShortcutsPage() {
           </p>
         </section>
 
+        {/* How to use going forward */}
+        <section className="mt-10 pt-8 border-t border-gray-200">
+          <h2 className="text-lg font-bold text-gray-900 mb-2">
+            🎯 How to use SpinCheck going forward
+          </h2>
+          <p className="text-sm text-gray-600 mb-5 leading-relaxed">
+            Each Shortcut is designed for a different reading scenario. Pick whichever fits the moment.
+          </p>
+
+          <div className="space-y-4">
+            {/* SpinCheck URL */}
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xl" aria-hidden="true">🔗</span>
+                <h3 className="text-sm font-bold text-gray-900">
+                  SpinCheck (URL) — articles in Safari
+                </h3>
+              </div>
+              <p className="text-xs text-gray-500 mb-3">
+                Best when you&apos;re reading an article and want a fast analysis.
+              </p>
+              <ol className="list-decimal list-inside space-y-1.5 text-sm text-gray-700">
+                <li>Open the article in <strong className="text-gray-900">Safari</strong> (or Apple News, etc.).</li>
+                <li>Tap the <strong className="text-gray-900">Share</strong> button at the bottom.</li>
+                <li>Tap <strong className="text-gray-900">SpinCheck (URL)</strong> in the action list. (Pin to Favorites — see below — for one-tap access.)</li>
+                <li>Wait ~10 seconds. The analysis appears in a sheet.</li>
+              </ol>
+              <p className="text-xs text-gray-500 mt-3 leading-relaxed">
+                💡 Works on paywalled articles too if you&apos;re logged into the site in Safari.
+              </p>
+            </div>
+
+            {/* SpinCheck Clipboard */}
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xl" aria-hidden="true">📋</span>
+                <h3 className="text-sm font-bold text-gray-900">
+                  SpinCheck (Clipboard) — tweets, Substack, anywhere else
+                </h3>
+              </div>
+              <p className="text-xs text-gray-500 mb-3">
+                Best when an app has its own custom share widget that doesn&apos;t use the iOS Share Sheet (X, Substack, Reddit, etc.).
+              </p>
+              <ol className="list-decimal list-inside space-y-1.5 text-sm text-gray-700">
+                <li>In any app, copy the URL or text. (Long-press → <strong className="text-gray-900">Copy</strong>, or tap the app&apos;s share menu → Copy.)</li>
+                <li>Go to your Home Screen and tap the <strong className="text-gray-900">SpinCheck</strong> icon. (To put it there: open the Shortcuts app → long-press SpinCheck (Clipboard) → <strong className="text-gray-900">Add to Home Screen</strong>.)</li>
+                <li>Wait ~10 seconds. The analysis appears in a sheet.</li>
+              </ol>
+              <p className="text-xs text-gray-500 mt-3 leading-relaxed">
+                💡 This is the universal fallback — works from any app since every app supports copying.
+              </p>
+            </div>
+
+            {/* SpinCheck Image */}
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xl" aria-hidden="true">📸</span>
+                <h3 className="text-sm font-bold text-gray-900">
+                  SpinCheck (Image) — tweets, paywalled content, anything visible on screen
+                </h3>
+              </div>
+              <p className="text-xs text-gray-500 mb-3">
+                Best for content that can&apos;t be scraped (X tweets, paywalls, native apps). Claude reads the image directly.
+              </p>
+              <ol className="list-decimal list-inside space-y-1.5 text-sm text-gray-700">
+                <li>Take a <strong className="text-gray-900">screenshot</strong> of the tweet, post, or article (Side button + Volume Up).</li>
+                <li>Tap the screenshot preview that appears in the bottom-left corner.</li>
+                <li>Tap the <strong className="text-gray-900">Share</strong> button at the top-right.</li>
+                <li>Tap <strong className="text-gray-900">SpinCheck (Image)</strong>. (Pin to Favorites for faster access.)</li>
+                <li>Wait ~10 seconds. The analysis appears in a sheet.</li>
+              </ol>
+              <p className="text-xs text-gray-500 mt-3 leading-relaxed">
+                💡 You can also share photos from your library the same way — anything you can screenshot, SpinCheck can read.
+              </p>
+            </div>
+          </div>
+        </section>
+
         {/* Pin to Share Sheet */}
         <section className="mt-10 pt-8 border-t border-gray-200">
           <h2 className="text-lg font-bold text-gray-900 mb-2">
