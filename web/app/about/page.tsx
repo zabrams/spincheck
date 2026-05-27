@@ -93,20 +93,18 @@ export default function AboutPage() {
             Showing: reading article → Share → SpinCheck → result, then
             the same flow with a screenshot of a tweet.
           */}
-          <div className="relative aspect-video w-full bg-gray-50 border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+          <div className="relative w-full max-w-sm mx-auto bg-gray-50 border border-gray-200 rounded-3xl overflow-hidden shadow-sm">
+            {/* Fallback placeholder — sits underneath the img so it shows
+                only if the GIF fails to load */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400 text-sm pointer-events-none">
+              <div className="text-4xl mb-3 opacity-60">📹</div>
+              <p className="font-medium text-gray-500">Demo loading…</p>
+            </div>
             <img
               src="/demo.gif"
-              alt="SpinCheck demo: reading an article, tapping share, analyzing it, then doing the same with a screenshot of a tweet"
-              className="absolute inset-0 w-full h-full object-cover"
+              alt="SpinCheck demo: reading an article, tapping share, getting a bias analysis on the phone"
+              className="relative w-full h-auto block"
             />
-            {/* Fallback shown while the GIF is missing or loading */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400 text-sm pointer-events-none [&:has(+img)]:hidden">
-              <div className="text-4xl mb-3 opacity-60">📹</div>
-              <p className="font-medium text-gray-500">Demo coming soon</p>
-              <p className="text-xs mt-1 text-gray-400">
-                Article → Share → SpinCheck → Result
-              </p>
-            </div>
           </div>
 
           <p className="text-center text-xs text-gray-500 mt-4">
