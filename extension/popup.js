@@ -1,27 +1,36 @@
 const $ = (id) => document.getElementById(id);
 
-const PHASE_MESSAGES = {
-  reading: 'Reading the article…',
-  assessing: 'Assessing political bias…',
-  writing_analysis: 'Writing detailed analysis…',
-  gathering_evidence: 'Gathering evidence from the text…',
-  finding_omissions: 'Looking for what\'s missing…',
-  finding_sources: 'Finding sources for balance…',
-  perspectives: 'Steel-manning both sides…',
-  common_ground: 'Looking for common ground…',
-};
+// Phases shown in the popup timeline. `finding_sources` is intentionally
+// excluded — the extension sends skipReading=true to /api/analyze, so that
+// phase never fires (reading is fetched on-demand via the button instead).
+const POPUP_PHASES = [
+  { id: 'reading',            label: 'Reading the article',          seconds: 3  },
+  { id: 'assessing',          label: 'Assessing political bias',     seconds: 4  },
+  { id: 'writing_analysis',   label: 'Writing detailed analysis',    seconds: 12 },
+  { id: 'gathering_evidence', label: 'Gathering evidence',           seconds: 6  },
+  { id: 'finding_omissions',  label: "Looking for what's missing",   seconds: 4  },
+  { id: 'perspectives',       label: 'Steel-manning both sides',     seconds: 7  },
+  { id: 'common_ground',      label: 'Looking for common ground',    seconds: 3  },
+];
+
+const CHECK_SVG = '<svg viewBox="0 0 20 20" width="9" height="9" fill="currentColor" aria-hidden="true"><path d="M16.7 5.3a1 1 0 0 1 0 1.4l-8 8a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 1.4-1.4L8 12.6l7.3-7.3a1 1 0 0 1 1.4 0z"/></svg>';
 
 function updatePhase(phase) {
-  const el = $('loading-phase');
-  if (el && PHASE_MESSAGES[phase]) {
-    el.textContent = PHASE_MESSAGES[phase];
-    // brief fade-in animation
-    el.style.opacity = '0';
-    requestAnimationFrame(() => {
-      el.style.transition = 'opacity 250ms ease';
-      el.style.opacity = '1';
-    });
-  }
+  const currentIdx = Math.max(0, POPUP_PHASES.findIndex((p) => p.id === phase));
+  const remaining = POPUP_PHASES.slice(currentIdx).reduce((s, p) => s + p.seconds, 0);
+  $('loading-remaining').textContent = `~${remaining}s remaining`;
+
+  $('timeline').innerHTML = POPUP_PHASES.map((p, i) => {
+    const state = i < currentIdx ? 'done' : i === currentIdx ? 'current' : 'pending';
+    const showConnector = i < POPUP_PHASES.length - 1;
+    return `
+      <li class="tl-item tl-${state}">
+        ${showConnector ? '<span class="tl-connector"></span>' : ''}
+        <span class="tl-marker">${state === 'done' ? CHECK_SVG : ''}</span>
+        <span class="tl-label">${escHtml(p.label)}</span>
+        <span class="tl-time">~${p.seconds}s</span>
+      </li>`;
+  }).join('');
 }
 
 const states = {

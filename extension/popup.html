@@ -24,8 +24,11 @@
 
     <!-- Loading -->
     <div id="loading-state" class="hidden">
-      <div class="spinner"></div>
-      <p class="loading-text" id="loading-phase">Reading the article…</p>
+      <div class="loading-header">
+        <span><span class="loading-pulse"></span>Analyzing article</span>
+        <span class="loading-remaining" id="loading-remaining">~39s remaining</span>
+      </div>
+      <ol class="timeline" id="timeline"></ol>
     </div>
 
     <!-- Result -->
