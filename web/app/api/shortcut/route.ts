@@ -95,8 +95,8 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  if (!content || content.trim().length < 100) {
-    return new Response('Article text must be at least 100 characters.', {
+  if (!content || content.trim().length < 20) {
+    return new Response('Content must be at least 20 characters (a short tweet or longer).', {
       status: 400,
       headers: corsHeaders,
     });

@@ -59,9 +59,9 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  if (!body.content || body.content.trim().length < 100) {
+  if (!body.content || body.content.trim().length < 20) {
     return new Response(
-      JSON.stringify({ success: false, error: 'Article content must be at least 100 characters' }),
+      JSON.stringify({ success: false, error: 'Content must be at least 20 characters (a short tweet or longer).' }),
       { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

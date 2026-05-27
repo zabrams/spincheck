@@ -23,6 +23,18 @@ export async function fetchAndExtract(url: string): Promise<ExtractedArticle> {
     throw new Error('Only http(s) URLs are supported.');
   }
 
+  // X/Twitter aggressively blocks server-side requests and returns near-empty HTML.
+  // Fail fast with a helpful message instead of letting Readability return garbage.
+  const host = parsed.hostname.toLowerCase().replace(/^www\./, '');
+  if (
+    host === 'twitter.com' || host === 'x.com' || host === 'mobile.twitter.com' ||
+    host.endsWith('.twitter.com') || host.endsWith('.x.com')
+  ) {
+    throw new Error(
+      'X/Twitter blocks server-side requests. Paste the tweet text directly using the "paste article text" option below.'
+    );
+  }
+
   // 15s timeout — some sites hang on server-side requests (paywalls, anti-bot, slow CDNs).
   // Without this, the Vercel function ties up until its own 60s maxDuration, which iOS
   // Shortcuts perceives as "The network connection was lost."
@@ -74,8 +86,8 @@ export async function fetchAndExtract(url: string): Promise<ExtractedArticle> {
   }
 
   const content = article.textContent.replace(/\n{3,}/g, '\n\n').trim();
-  if (content.length < 100) {
-    throw new Error('Extracted article is too short to analyze.');
+  if (content.length < 50) {
+    throw new Error('Extracted article is too short to analyze. The page may be paywalled or behind a login.');
   }
 
   return {

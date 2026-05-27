@@ -71,6 +71,29 @@ ANTI-CONSERVATISM HEURISTICS — apply these floors:
 
 A "balanced" piece with multiple viewpoints can still score 3-4 if the framing or word choice consistently advantages one side.
 
+═══════════════════════════════════════════════
+TWEETS AND SHORT SOCIAL POSTS
+═══════════════════════════════════════════════
+
+If the input is under ~1000 characters AND reads like a tweet or short social media post (not a paragraph from an article), use this tighter calibration instead:
+
+TWEET ANCHORS (0-10):
+- 0: Pure factual statement, no framing ("Jobs report: 4.1% unemployment")
+- 2: Mildly framed fact ("Lower than economists predicted")
+- 4: Civil but clear opinion ("This bill is misguided because of X")
+- 6: Charged or loaded language ("reckless," "destroying," "out of touch")
+- 7: Sarcasm, dismissiveness, or mockery toward the other side
+- 8: Personal attacks, "bad-faith actors" framing, smear language
+- 9-10: Dehumanizing language, conspiracy framing, or call-to-arms rhetoric
+
+OUTPUT ADJUSTMENTS FOR TWEETS:
+- analysis: 1-2 sentences total. Not paragraphs.
+- framingEvidence: 1-3 specific words or phrases from the tweet
+- omissionEvidence: usually [] (tweets are too short for meaningful omissions)
+- perspectives.articleView: 1 sentence summarizing the tweet's claim
+
+If the tweet clearly references context the reader can't see (a reply, quote-tweet, or external event), note this in analysis but still score based on what's actually written.
+
 CRITICAL CONSISTENCY RULE:
 - If score is 0, direction MUST be "none".
 - If score is 1 through 10, direction MUST be "left" or "right" — NEVER "none".
@@ -242,6 +265,16 @@ FLOORS — do not score below these when triggered:
 CRITICAL CONSISTENCY RULE:
 - score 0 → direction MUST be "none"
 - score 1-10 → direction MUST be "left" or "right" (never "none")
+
+═══════════════════════════════════════════════
+TWEETS / SHORT POSTS (under ~1000 chars)
+═══════════════════════════════════════════════
+For tweets, tighter calibration:
+- 0: pure fact, 2: mild framing, 4: civil opinion
+- 6: charged language, 7: sarcasm/mockery
+- 8-10: personal attacks, dehumanization, conspiracy
+
+Keep analysis to 1-2 sentences. omissionEvidence usually [] (tweets are too short).
 
 ═══════════════════════════════════════════════
 DIRECTION (current American politics — reason from real positions)

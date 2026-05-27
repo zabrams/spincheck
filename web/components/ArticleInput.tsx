@@ -98,10 +98,10 @@ export default function ArticleInput({ onAnalyze, loading }: Props) {
   // ─────────── TEXT MODE (advanced) ───────────
   if (mode === 'text') {
     const charCount = content.length;
-    const isValid = charCount >= 100 && charCount <= 100_000;
+    const isValid = charCount >= 20 && charCount <= 100_000;
     const charCountColor =
       charCount > 100_000 ? 'text-red-400'
-      : charCount >= 100 ? 'text-green-400'
+      : charCount >= 20 ? 'text-green-400'
       : 'text-gray-500';
 
     return (
@@ -124,7 +124,7 @@ export default function ArticleInput({ onAnalyze, loading }: Props) {
 
         <div className="relative">
           <textarea
-            placeholder="Paste article content here…"
+            placeholder="Paste article text, a tweet, or any short post here…"
             value={content}
             onChange={(e) => setContent(e.target.value)}
             rows={12}
@@ -198,7 +198,7 @@ export default function ArticleInput({ onAnalyze, loading }: Props) {
           onClick={() => { setMode('text'); setHint(null); }}
           className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
         >
-          Or paste article text instead →
+          Or paste article text / tweet instead →
         </button>
       </div>
     </form>
