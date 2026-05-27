@@ -22,6 +22,34 @@ export async function OPTIONS() {
   return new Response(null, { status: 204, headers: corsHeaders });
 }
 
+// Friendly response when someone (or you) visits this URL in a browser.
+// The Shortcut uses POST so this is just for humans.
+export async function GET() {
+  const help = `⚖️ SpinCheck — Shortcut API
+─────────────────────────────────
+
+This is a POST endpoint used by the iOS Shortcut.
+You're seeing this because you opened it in a browser (which does a GET).
+
+If you want to use SpinCheck, visit:
+  https://spincheck.app
+
+If you're configuring an iOS Shortcut:
+  URL:    https://spincheck.app/api/shortcut
+  Method: POST
+  Body:   { "url": "https://..." }
+       or { "content": "article text..." }
+  Returns: plain-text bias analysis
+
+The endpoint is working — you can confirm by submitting a POST request from
+the Shortcut or with curl.`;
+
+  return new Response(help, {
+    status: 200,
+    headers: { ...corsHeaders, 'Content-Type': 'text/plain; charset=utf-8' },
+  });
+}
+
 function looksLikeUrl(s: string): boolean {
   const trimmed = s.trim();
   return /^https?:\/\/\S+$/i.test(trimmed) && trimmed.length < 2048;
