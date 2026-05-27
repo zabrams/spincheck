@@ -68,6 +68,28 @@
       <div class="section hidden" id="section-steelman"></div>
       <div class="section hidden" id="section-reading"></div>
 
+      <!-- Feedback -->
+      <div id="feedback-prompt" class="feedback-box">
+        <span class="fb-prompt-text">Was this helpful?</span>
+        <div class="fb-buttons">
+          <button type="button" id="fb-up" class="fb-btn" aria-label="Helpful">👍</button>
+          <button type="button" id="fb-down" class="fb-btn" aria-label="Not helpful">👎</button>
+        </div>
+      </div>
+
+      <div id="feedback-comment" class="feedback-box hidden">
+        <p id="fb-comment-prompt" class="fb-comment-prompt">Tell us more (optional):</p>
+        <textarea id="fb-comment-text" rows="3" maxlength="2000" placeholder=""></textarea>
+        <div class="fb-actions">
+          <button type="button" id="fb-cancel" class="fb-cancel">Cancel</button>
+          <button type="button" id="fb-submit" class="fb-submit">Submit</button>
+        </div>
+      </div>
+
+      <div id="feedback-done" class="feedback-box feedback-done hidden">
+        <span class="fb-thanks">✓ Thanks for the feedback!</span>
+      </div>
+
       <button id="re-analyze-btn" class="btn-secondary">↺ Analyze Again</button>
     </div>
 

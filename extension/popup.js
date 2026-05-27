@@ -232,9 +232,84 @@ function renderResult(a) {
   // Reading is now fetched on-demand. Show a button until the user requests it.
   renderReadingSection(a);
 
+  // Reset feedback UI state for this result
+  resetFeedbackUi(a);
+
   switchTab('analysis');
   showState('result');
 }
+
+// ─────────── Feedback ───────────
+
+let feedbackVote = null;
+let feedbackAnalysis = null;
+
+function resetFeedbackUi(analysis) {
+  feedbackVote = null;
+  feedbackAnalysis = analysis;
+  $('feedback-prompt').classList.remove('hidden');
+  $('feedback-comment').classList.add('hidden');
+  $('feedback-done').classList.add('hidden');
+  $('fb-comment-text').value = '';
+}
+
+function handleFeedbackVote(vote) {
+  feedbackVote = vote;
+  $('feedback-prompt').classList.add('hidden');
+  $('feedback-comment').classList.remove('hidden');
+  $('fb-comment-prompt').textContent =
+    vote === 'up'
+      ? 'Glad it was helpful! What worked? (optional)'
+      : 'Sorry the analysis missed the mark. What was off? (optional)';
+  $('fb-comment-text').placeholder =
+    vote === 'up' ? 'What was useful?' : 'What was wrong or missing?';
+  $('fb-comment-text').focus();
+}
+
+async function submitFeedback() {
+  if (!feedbackVote || !feedbackAnalysis) return;
+
+  const btn = $('fb-submit');
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+
+  // Derive feedback URL from the analyze URL by swapping the path
+  const feedbackUrl = SPINCHECK_CONFIG.API_URL.replace(/\/api\/[^/?#]+/, '/api/feedback');
+
+  try {
+    await fetch(feedbackUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        vote: feedbackVote,
+        comment: $('fb-comment-text').value.trim() || undefined,
+        url: currentUrl,
+        analysis: feedbackAnalysis,
+        source: 'extension',
+      }),
+    });
+  } catch {
+    // Fire-and-forget — proceed to thanks even on failure
+  } finally {
+    $('feedback-comment').classList.add('hidden');
+    $('feedback-done').classList.remove('hidden');
+    btn.disabled = false;
+    btn.textContent = 'Submit';
+  }
+}
+
+function cancelFeedback() {
+  feedbackVote = null;
+  $('fb-comment-text').value = '';
+  $('feedback-comment').classList.add('hidden');
+  $('feedback-prompt').classList.remove('hidden');
+}
+
+// Bind once at startup
+$('fb-up').addEventListener('click', () => handleFeedbackVote('up'));
+$('fb-down').addEventListener('click', () => handleFeedbackVote('down'));
+$('fb-submit').addEventListener('click', submitFeedback);
+$('fb-cancel').addEventListener('click', cancelFeedback);
 
 function renderReadingSection(a) {
   if (a.furtherReading && a.furtherReading.length) {

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import ArticleInput, { type AnalyzeInput } from '@/components/ArticleInput';
 import BiasResult from '@/components/BiasResult';
+import FeedbackForm from '@/components/FeedbackForm';
 import Logo from '@/components/Logo';
 import type { BiasAnalysis } from '@/types/analysis';
 
@@ -29,12 +30,16 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [phase, setPhase] = useState<string>('reading');
   const [error, setError] = useState<string | null>(null);
+  // Track the input that produced the current analysis so we can attach
+  // it to feedback records.
+  const [lastInput, setLastInput] = useState<AnalyzeInput | null>(null);
 
   async function handleAnalyze(input: AnalyzeInput) {
     setLoading(true);
     setPhase('reading');
     setError(null);
     setAnalysis(null);
+    setLastInput(input);
 
     try {
       const res = await fetch('/api/analyze', {
@@ -189,7 +194,17 @@ export default function Home() {
           </div>
         )}
 
-        {analysis && <BiasResult analysis={analysis} />}
+        {analysis && (
+          <>
+            <BiasResult analysis={analysis} />
+            <FeedbackForm
+              key={lastInput?.url || lastInput?.content?.slice(0, 50) || 'unknown'}
+              analysis={analysis}
+              url={lastInput?.url}
+              title={lastInput?.title}
+            />
+          </>
+        )}
       </div>
 
       <footer className="text-center py-8 text-xs text-gray-500 border-t border-gray-200">
