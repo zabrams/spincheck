@@ -53,6 +53,12 @@ Use these real-world reference points:
 - 2: Pieces with a clear lean that still acknowledge counter-views; politely-worded opinion columns; news framing that consistently favors one side without being inflammatory.
 - 3: Cable news opinion (Hannity, Maddow), explicit advocacy outlets (Mother Jones, Daily Wire, Breitbart, Jacobin), tabloid framing, pieces that dismiss or ridicule the opposing side.
 
+CRITICAL CONSISTENCY RULE:
+- If score is 0, direction MUST be "none".
+- If score is 1, 2, or 3, direction MUST be "left" or "right" — NEVER "none".
+- Conversely: if direction is "none", score MUST be 0.
+- Never return a contradiction like score=1 with direction="none". If the article is biased enough to score 1+, you must commit to a direction.
+
 ═══════════════════════════════════════════════
 DIRECTION — BASE ON CURRENT AMERICAN POLITICS
 ═══════════════════════════════════════════════

@@ -122,7 +122,7 @@ $('retry-btn').addEventListener('click', async () => {
 function renderResult(a) {
   const dir = a.direction;
   const score = a.score;
-  const scoreStr = dir === 'none' ? '0' : `${score}${dir === 'left' ? 'L' : 'R'}`;
+  const scoreStr = dir === 'left' ? `${score}L` : dir === 'right' ? `${score}R` : `${score}`;
   const labels = ['No Bias', 'Slightly Biased', 'Moderately Biased', 'Strongly Biased'];
   const dirLabel = dir === 'none' ? '' : dir === 'left' ? ' — Leans Left' : ' — Leans Right';
 

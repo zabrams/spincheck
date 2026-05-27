@@ -9,6 +9,7 @@ import {
   retryAnalyze,
 } from '@/lib/claude';
 import { fetchAndExtract } from '@/lib/extract';
+import { encodeShareData } from '@/lib/share';
 import type { BiasAnalysis } from '@/types/analysis';
 
 export const maxDuration = 60;
@@ -104,7 +105,8 @@ export async function POST(request: NextRequest) {
       analysis = (await retryAnalyze(userMessage)) as BiasAnalysis;
     }
 
-    return new Response(formatForShortcut(analysis), {
+    const viewUrl = encodeShareData({ analysis, url, title });
+    return new Response(formatForShortcut(analysis, viewUrl), {
       headers: { ...corsHeaders, 'Content-Type': 'text/plain; charset=utf-8' },
     });
   } catch (err) {
@@ -116,23 +118,30 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function formatForShortcut(a: BiasAnalysis): string {
+function formatForShortcut(a: BiasAnalysis, viewUrl: string): string {
   const scoreLabels = ['No Bias', 'Slightly Biased', 'Moderately Biased', 'Strongly Biased'];
+
+  // FIX: always show the actual score; only append L/R suffix when direction has one
   const scoreStr =
-    a.direction === 'none' ? '0' : `${a.score}${a.direction === 'left' ? 'L' : 'R'}`;
+    a.direction === 'left' ? `${a.score}L`
+    : a.direction === 'right' ? `${a.score}R`
+    : `${a.score}`;
+
   const dirLabel =
-    a.direction === 'none' ? '' : a.direction === 'left' ? ' · Leans Left' : ' · Leans Right';
+    a.direction === 'left' ? ' — Leans Left'
+    : a.direction === 'right' ? ' — Leans Right'
+    : '';
+
   const scoreLine = `${scoreStr} · ${scoreLabels[a.score]}${dirLabel}`;
 
-  const tags = [
-    a.isEditorial ? '📝 Editorial' : '📰 Factual',
-    a.presentsBothSides ? '✓ Balanced' : '✗ One-Sided',
-    a.usesEmotionalLanguage ? '⚠ Emotional Language' : null,
-    a.hasSelectiveSourcing ? '⚠ Selective Sourcing' : null,
-    a.hasMisleadingHeadline ? '⚠ Misleading Headline' : null,
-  ]
-    .filter(Boolean)
-    .join('  ');
+  // All 5 pills, with both states (matches Chrome extension behavior)
+  const tagLines = [
+    a.isEditorial ? '📝 Editorial' : '📰 Factual Reporting',
+    a.presentsBothSides ? '✓ Presents Both Sides' : '✗ One-Sided',
+    a.usesEmotionalLanguage ? '⚠ Emotional Language' : '✓ Neutral Tone',
+    a.hasSelectiveSourcing ? '⚠ Selective Sourcing' : '✓ Diverse Sources',
+    a.hasMisleadingHeadline ? '⚠ Misleading Headline' : '✓ Accurate Headline',
+  ];
 
   const D = '─────────────────────';
 
@@ -140,7 +149,7 @@ function formatForShortcut(a: BiasAnalysis): string {
   out += `${scoreLine}\n`;
   out += `Confidence: ${a.confidence}\n\n`;
   out += `${a.summary}\n\n`;
-  out += `${tags}\n`;
+  out += tagLines.join('\n') + '\n';
 
   if (a.perspectives.commonGround) {
     out += `\n${D}\n🤝 COMMON GROUND\n${D}\n`;
@@ -169,6 +178,6 @@ function formatForShortcut(a: BiasAnalysis): string {
     });
   }
 
-  out += `${D}\nspincheck.app`;
+  out += `\n${D}\n🔗 View full analysis on the web:\n${viewUrl}`;
   return out.trim();
 }

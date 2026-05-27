@@ -27,7 +27,9 @@ export default function BiasResult({ analysis }: Props) {
         : 'text-red-400';
 
   const scoreDisplay =
-    direction === 'none' ? '0' : `${score}${direction === 'left' ? 'L' : 'R'}`;
+    direction === 'left' ? `${score}L`
+    : direction === 'right' ? `${score}R`
+    : `${score}`;
 
   // Article's view = article's bias direction; Opposing view = opposite color
   const articleViewColor =
