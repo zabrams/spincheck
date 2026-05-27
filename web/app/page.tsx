@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import ArticleInput, { type AnalyzeInput } from '@/components/ArticleInput';
 import BiasResult from '@/components/BiasResult';
+import Logo from '@/components/Logo';
 import type { BiasAnalysis } from '@/types/analysis';
 
 interface Phase {
@@ -12,8 +13,6 @@ interface Phase {
   seconds: number;
 }
 
-// Phase order matches the server's JSON schema output order in SYSTEM_PROMPT.
-// Estimated seconds are tuned for Sonnet 4.6.
 const PHASES: Phase[] = [
   { id: 'reading',            label: 'Reading the article',          seconds: 3  },
   { id: 'assessing',          label: 'Assessing political bias',     seconds: 4  },
@@ -74,7 +73,6 @@ export default function Home() {
           } else if (event.type === 'error') {
             throw new Error(event.error || 'Analysis failed');
           }
-          // 'progress' events ignored — the timeline UI is the indicator
         }
       }
     } catch (err) {
@@ -89,40 +87,34 @@ export default function Home() {
     .reduce((sum, p) => sum + p.seconds, 0);
 
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen bg-white text-gray-900">
       {/* Top nav — minimal, doesn't compete with the input */}
-      <nav className="flex items-center justify-end gap-5 px-4 py-4 max-w-3xl mx-auto text-xs">
-        <Link href="/about" className="text-gray-500 hover:text-gray-200 transition-colors">About</Link>
-        <Link href="/shortcuts" className="text-gray-500 hover:text-gray-200 transition-colors">iOS</Link>
+      <nav className="flex items-center justify-end gap-6 px-4 py-4 max-w-4xl mx-auto text-sm">
+        <Link href="/about" className="text-gray-500 hover:text-gray-900 transition-colors">About</Link>
+        <Link href="/shortcuts" className="text-gray-500 hover:text-gray-900 transition-colors">iOS</Link>
       </nav>
 
-      <div className="max-w-3xl mx-auto px-4 pb-12">
+      <div className="max-w-3xl mx-auto px-4 pb-16 pt-8">
+
+        {/* ─────────── Hero ─────────── */}
         <header className="text-center mb-10">
-          <div className="flex items-center justify-center gap-3 mb-3">
-            <span className="text-4xl" role="img" aria-label="scales">⚖️</span>
-            <h1 className="text-4xl font-black tracking-tight text-white">SpinCheck</h1>
+          <div className="flex items-center justify-center gap-3 mb-5">
+            <Logo size={56} className="text-gray-900" />
+            <h1 className="text-5xl font-black tracking-tight text-gray-900">SpinCheck</h1>
           </div>
-          <p className="text-gray-400 text-base max-w-xl mx-auto leading-relaxed">
-            Paste any news article to get an AI-powered analysis of its political bias —
-            with evidence, balanced perspectives, and steel man arguments for both sides.
+          <p className="text-2xl text-gray-600 font-medium">
+            See the bias. Read smarter.
           </p>
-          <div className="mt-3 flex items-center justify-center gap-4 text-xs text-gray-600">
-            <span>0–10 scale</span>
-            <span>·</span>
-            <span className="text-blue-500">Left</span>
-            <span>/</span>
-            <span className="text-red-500">Right</span>
-            <span>·</span>
-            <span>Powered by Claude</span>
-          </div>
         </header>
 
+        {/* ─────────── Big input ─────────── */}
         <ArticleInput onAnalyze={handleAnalyze} loading={loading} />
 
+        {/* ─────────── Loader timeline ─────────── */}
         {loading && (
-          <div className="mt-6 bg-gray-900/60 border border-gray-800 rounded-xl p-5 animate-in fade-in duration-300">
-            <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-800">
-              <h3 className="text-sm font-semibold text-white flex items-center">
+          <div className="mt-6 bg-gray-50 border border-gray-200 rounded-xl p-5 animate-in fade-in duration-300">
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
+              <h3 className="text-sm font-semibold text-gray-900 flex items-center">
                 <span className="inline-block w-2 h-2 rounded-full bg-blue-500 mr-2 animate-pulse" />
                 Analyzing article
               </h3>
@@ -139,11 +131,11 @@ export default function Home() {
 
                 return (
                   <li key={p.id} className="flex items-start gap-3 relative pb-3.5 last:pb-0">
-                    {/* Vertical connector to next step */}
+                    {/* Vertical connector */}
                     {!isLast && (
                       <span
                         className={`absolute left-2 top-5 bottom-0 w-px transition-colors duration-500 ${
-                          isDone ? 'bg-green-500/40' : 'bg-gray-800'
+                          isDone ? 'bg-green-400' : 'bg-gray-200'
                         }`}
                         aria-hidden="true"
                       />
@@ -152,18 +144,18 @@ export default function Home() {
                     {/* Status marker */}
                     <span className="relative z-10 flex-shrink-0 w-4 h-4 flex items-center justify-center mt-0.5">
                       {isDone ? (
-                        <span className="w-4 h-4 rounded-full bg-green-500/20 border border-green-500/60 flex items-center justify-center">
-                          <svg className="w-2.5 h-2.5 text-green-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <span className="w-4 h-4 rounded-full bg-green-100 border border-green-400 flex items-center justify-center">
+                          <svg className="w-2.5 h-2.5 text-green-600" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                           </svg>
                         </span>
                       ) : isCurrent ? (
                         <span className="relative inline-flex h-4 w-4 items-center justify-center" aria-label="Current step">
-                          <span className="absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-50 animate-ping" />
-                          <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500 ring-2 ring-blue-500/30" />
+                          <span className="absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-40 animate-ping" />
+                          <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500 ring-4 ring-blue-100" />
                         </span>
                       ) : (
-                        <span className="w-2 h-2 rounded-full bg-gray-700" aria-hidden="true" />
+                        <span className="w-2 h-2 rounded-full bg-gray-300" aria-hidden="true" />
                       )}
                     </span>
 
@@ -171,14 +163,14 @@ export default function Home() {
                     <div className="flex-1 flex items-center justify-between gap-3 min-h-[16px]">
                       <span
                         className={`text-sm transition-colors duration-300 ${
-                          isDone ? 'text-gray-500' : isCurrent ? 'text-white font-medium' : 'text-gray-600'
+                          isDone ? 'text-gray-400' : isCurrent ? 'text-gray-900 font-medium' : 'text-gray-400'
                         }`}
                       >
                         {p.label}
                       </span>
                       <span
                         className={`text-xs tabular-nums transition-colors duration-300 ${
-                          isCurrent ? 'text-blue-400 font-medium' : isDone ? 'text-gray-700' : 'text-gray-600'
+                          isCurrent ? 'text-blue-600 font-medium' : 'text-gray-400'
                         }`}
                       >
                         ~{p.seconds}s
@@ -192,7 +184,7 @@ export default function Home() {
         )}
 
         {error && (
-          <div className="mt-5 p-4 bg-red-900/30 border border-red-500/30 rounded-lg text-red-400 text-sm">
+          <div className="mt-5 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
             {error}
           </div>
         )}
@@ -200,24 +192,21 @@ export default function Home() {
         {analysis && <BiasResult analysis={analysis} />}
       </div>
 
-      <footer className="text-center py-8 text-xs text-gray-700 border-t border-gray-800 mt-12">
+      <footer className="text-center py-8 text-xs text-gray-500 border-t border-gray-200">
         SpinCheck uses AI to detect media bias. Results are analytical, not authoritative.
         <br />
-        <span className="inline-flex gap-4 mt-2 flex-wrap justify-center">
-          <a href="/shortcuts" className="text-gray-500 hover:text-gray-300">
-            iOS Shortcuts
-          </a>
+        <span className="inline-flex gap-5 mt-3 flex-wrap justify-center">
+          <Link href="/about" className="hover:text-gray-900">About</Link>
+          <Link href="/shortcuts" className="hover:text-gray-900">iOS Shortcuts</Link>
           <a
             href="https://github.com/zabrams/spincheck"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-gray-500 hover:text-gray-300"
+            className="hover:text-gray-900"
           >
             Chrome extension
           </a>
-          <a href="/privacy" className="text-gray-500 hover:text-gray-300">
-            Privacy Policy
-          </a>
+          <Link href="/privacy" className="hover:text-gray-900">Privacy</Link>
         </span>
       </footer>
     </main>

@@ -100,16 +100,16 @@ export default function ArticleInput({ onAnalyze, loading }: Props) {
     const charCount = content.length;
     const isValid = charCount >= 20 && charCount <= 100_000;
     const charCountColor =
-      charCount > 100_000 ? 'text-red-400'
-      : charCount >= 20 ? 'text-green-400'
-      : 'text-gray-500';
+      charCount > 100_000 ? 'text-red-600'
+      : charCount >= 20 ? 'text-green-600'
+      : 'text-gray-400';
 
     return (
       <form onSubmit={handleTextSubmit} className="space-y-3">
         <button
           type="button"
           onClick={() => { setMode('url'); setHint(null); }}
-          className="text-xs text-gray-500 hover:text-gray-300 transition-colors -mb-1"
+          className="text-sm text-gray-500 hover:text-gray-900 transition-colors -mb-1"
         >
           ← Back to URL input
         </button>
@@ -119,7 +119,7 @@ export default function ArticleInput({ onAnalyze, loading }: Props) {
           placeholder="Article title (optional)"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
+          className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
         />
 
         <div className="relative">
@@ -128,7 +128,7 @@ export default function ArticleInput({ onAnalyze, loading }: Props) {
             value={content}
             onChange={(e) => setContent(e.target.value)}
             rows={12}
-            className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors resize-none font-mono text-sm"
+            className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all resize-none font-mono text-sm"
           />
           <span className={`absolute bottom-3 right-3 text-xs ${charCountColor}`}>
             {charCount.toLocaleString()} / 100,000
@@ -138,7 +138,7 @@ export default function ArticleInput({ onAnalyze, loading }: Props) {
         <button
           type="submit"
           disabled={!isValid || loading}
-          className="w-full py-3 px-6 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+          className="w-full py-3.5 px-6 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
         >
           {loading ? <Spinner /> : 'Analyze Article'}
         </button>
@@ -152,24 +152,24 @@ export default function ArticleInput({ onAnalyze, loading }: Props) {
   const buttonDisabled = loading || (hasUrl && !isValidUrl);
 
   return (
-    <form onSubmit={handleUrlSubmit} className="space-y-3">
+    <form onSubmit={handleUrlSubmit} className="space-y-4">
       <input
         ref={urlInputRef}
         type="url"
-        placeholder="Paste an article URL — e.g. https://nytimes.com/…"
+        placeholder="Paste an article URL…"
         value={url}
         onChange={(e) => { setUrl(e.target.value); setHint(null); }}
         onPaste={handleUrlPaste}
         autoFocus
         spellCheck={false}
         autoComplete="url"
-        className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors text-base"
+        className="w-full bg-white border-2 border-gray-200 hover:border-gray-300 rounded-2xl px-6 py-6 text-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/15 transition-all"
       />
 
       <button
         type="submit"
         disabled={buttonDisabled}
-        className="w-full py-3.5 px-6 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+        className="w-full py-4 px-6 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-white text-base font-semibold rounded-xl transition-all shadow-sm hover:shadow flex items-center justify-center gap-2"
       >
         {loading ? (
           <Spinner />
@@ -187,16 +187,16 @@ export default function ArticleInput({ onAnalyze, loading }: Props) {
       </button>
 
       {hint && (
-        <p className="text-xs text-amber-400 px-1" role="status">
+        <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2" role="status">
           {hint}
         </p>
       )}
 
-      <div className="pt-1 text-center">
+      <div className="pt-2 text-center">
         <button
           type="button"
           onClick={() => { setMode('text'); setHint(null); }}
-          className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
+          className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
         >
           Or paste article text / tweet instead →
         </button>
