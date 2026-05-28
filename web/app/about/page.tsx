@@ -38,7 +38,7 @@ const PLATFORMS = [
     description:
       'Works on paywalled articles too — reads what\'s already loaded in your browser. Shows the bias score, evidence, and opposing perspectives right in a popup.',
     cta: 'Install Extension',
-    href: 'https://github.com/zabrams/spincheck#chrome-extension',
+    href: 'https://chromewebstore.google.com/detail/spincheck/jokmjbpdjfiencphjihbdllkmlgdjpjj',
     external: true,
     primary: false,
   },
@@ -184,7 +184,7 @@ export default function AboutPage() {
           <Link href="/" className="hover:text-gray-900">spincheck.app</Link>
           <Link href="/shortcuts" className="hover:text-gray-900">iOS Shortcuts</Link>
           <a
-            href="https://github.com/zabrams/spincheck"
+            href="https://chromewebstore.google.com/detail/spincheck/jokmjbpdjfiencphjihbdllkmlgdjpjj"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-gray-900"

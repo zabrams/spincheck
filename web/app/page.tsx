@@ -222,7 +222,7 @@ export default function Home() {
           <Link href="/about" className="hover:text-gray-900">About</Link>
           <Link href="/shortcuts" className="hover:text-gray-900">iOS Shortcuts</Link>
           <a
-            href="https://github.com/zabrams/spincheck"
+            href="https://chromewebstore.google.com/detail/spincheck/jokmjbpdjfiencphjihbdllkmlgdjpjj"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-gray-900"

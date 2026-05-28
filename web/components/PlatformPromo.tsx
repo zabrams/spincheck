@@ -93,7 +93,7 @@ export default function PlatformPromo({ variant }: Props) {
         {primary === 'chrome' ? (
           <>
             <a
-              href="https://github.com/zabrams/spincheck#chrome-extension"
+              href="https://chromewebstore.google.com/detail/spincheck/jokmjbpdjfiencphjihbdllkmlgdjpjj"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors shadow-sm"
@@ -116,7 +116,7 @@ export default function PlatformPromo({ variant }: Props) {
               📱 Install iOS Shortcuts
             </Link>
             <a
-              href="https://github.com/zabrams/spincheck#chrome-extension"
+              href="https://chromewebstore.google.com/detail/spincheck/jokmjbpdjfiencphjihbdllkmlgdjpjj"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-gray-300 hover:border-gray-400 text-gray-900 text-sm font-semibold transition-colors"

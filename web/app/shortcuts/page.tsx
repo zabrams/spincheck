@@ -260,7 +260,7 @@ export default function ShortcutsPage() {
             <li>
               <strong className="text-gray-900">Chrome / desktop:</strong>{' '}
               <a
-                href="https://github.com/zabrams/spincheck"
+                href="https://chromewebstore.google.com/detail/spincheck/jokmjbpdjfiencphjihbdllkmlgdjpjj"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-600 hover:text-blue-700"
