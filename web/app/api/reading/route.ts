@@ -5,6 +5,7 @@ import {
   READING_SYSTEM_PROMPT,
   stripJsonFences,
 } from '@/lib/claude';
+import { logApiError, getErrorResponse } from '@/lib/log';
 
 export const maxDuration = 30;
 
@@ -65,10 +66,11 @@ export async function POST(request: NextRequest) {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (err) {
-    console.error('Reading recommendation error:', err);
-    return new Response(JSON.stringify({ success: false, error: 'Failed to fetch reading suggestions' }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    logApiError({ endpoint: 'reading', err, context: { stage: 'claude' } });
+    const friendly = getErrorResponse(err);
+    return new Response(
+      JSON.stringify({ success: false, error: friendly.text, code: friendly.code }),
+      { status: friendly.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   }
 }

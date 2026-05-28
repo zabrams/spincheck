@@ -9,6 +9,7 @@ import {
 } from '@/lib/claude';
 import { fetchAndExtract } from '@/lib/extract';
 import { formatForShortcut, type ShortcutAnalysis } from '@/lib/format';
+import { logApiError, getErrorResponse } from '@/lib/log';
 
 export const maxDuration = 60;
 
@@ -75,6 +76,7 @@ export async function POST(request: NextRequest) {
       content = extracted.content;
       if (!title) title = extracted.title;
     } catch (err) {
+      logApiError({ endpoint: 'shortcut', err, context: { stage: 'fetchAndExtract', url } });
       return new Response(
         err instanceof Error ? err.message : 'Failed to fetch article.',
         { status: 400, headers: corsHeaders }
@@ -88,6 +90,11 @@ export async function POST(request: NextRequest) {
       if (!title) title = extracted.title;
       url = sharedUrl;
     } catch (err) {
+      logApiError({
+        endpoint: 'shortcut',
+        err,
+        context: { stage: 'fetchAndExtract', url: sharedUrl },
+      });
       return new Response(
         err instanceof Error ? err.message : 'Failed to fetch article.',
         { status: 400, headers: corsHeaders }
@@ -126,11 +133,13 @@ export async function POST(request: NextRequest) {
       headers: { ...corsHeaders, 'Content-Type': 'text/plain; charset=utf-8' },
     });
   } catch (err) {
-    console.error('Shortcut analysis error:', err);
-    return new Response('Analysis failed. Please try again.', {
-      status: 500,
-      headers: corsHeaders,
+    logApiError({
+      endpoint: 'shortcut',
+      err,
+      context: { stage: 'claude', url, contentLength: content?.length },
     });
+    const friendly = getErrorResponse(err);
+    return new Response(friendly.text, { status: friendly.status, headers: corsHeaders });
   }
 }
 

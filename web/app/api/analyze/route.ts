@@ -9,6 +9,7 @@ import {
   retryAnalyze,
 } from '@/lib/claude';
 import { fetchAndExtract } from '@/lib/extract';
+import { logApiError, getErrorResponse } from '@/lib/log';
 import type { AnalyzeRequest, BiasAnalysis } from '@/types/analysis';
 
 export const maxDuration = 60; // Vercel Pro: allow up to 60s for Sonnet
@@ -49,6 +50,11 @@ export async function POST(request: NextRequest) {
       extractedTitle = extracted.title;
       body.url = fetchUrl;
     } catch (err) {
+      logApiError({
+        endpoint: 'analyze',
+        err,
+        context: { stage: 'fetchAndExtract', url: fetchUrl },
+      });
       return new Response(
         JSON.stringify({
           success: false,
@@ -161,11 +167,18 @@ export async function POST(request: NextRequest) {
 
         send({ type: 'result', data: analysis });
       } catch (err) {
-        console.error('Analysis error:', err);
-        send({
-          type: 'error',
-          error: err instanceof Error ? err.message : 'Analysis failed',
+        logApiError({
+          endpoint: 'analyze',
+          err,
+          context: {
+            stage: 'claude',
+            url: body.url,
+            contentLength: body.content?.length,
+            skipReading,
+          },
         });
+        const friendly = getErrorResponse(err);
+        send({ type: 'error', error: friendly.text, code: friendly.code });
       }
 
       controller.close();

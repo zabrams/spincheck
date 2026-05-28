@@ -7,6 +7,7 @@ import {
   stripJsonFences,
 } from '@/lib/claude';
 import { formatForShortcut, type ShortcutAnalysis } from '@/lib/format';
+import { logApiError, getErrorResponse } from '@/lib/log';
 
 export const maxDuration = 60;
 
@@ -174,12 +175,12 @@ export async function POST(request: NextRequest) {
       headers: { ...corsHeaders, 'Content-Type': 'text/plain; charset=utf-8' },
     });
   } catch (err) {
-    console.error('Image analysis error:', err);
-    const message =
-      err instanceof Error && err.message ? err.message : 'Analysis failed. Please try again.';
-    return new Response(`Analysis failed: ${message}`, {
-      status: 500,
-      headers: corsHeaders,
+    logApiError({
+      endpoint: 'analyze-image',
+      err,
+      context: { stage: 'claude', mediaType, imageBytes: imageData.length },
     });
+    const friendly = getErrorResponse(err);
+    return new Response(friendly.text, { status: friendly.status, headers: corsHeaders });
   }
 }
