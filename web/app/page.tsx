@@ -6,6 +6,7 @@ import ArticleInput, { type AnalyzeInput } from '@/components/ArticleInput';
 import BiasResult from '@/components/BiasResult';
 import FeedbackForm from '@/components/FeedbackForm';
 import Logo from '@/components/Logo';
+import PlatformPromo from '@/components/PlatformPromo';
 import type { BiasAnalysis } from '@/types/analysis';
 
 interface Phase {
@@ -186,6 +187,13 @@ export default function Home() {
               })}
             </ol>
           </div>
+        )}
+
+        {/* Platform promo — shown above any result, even errors, so users
+            learn about the Chrome extension / iOS Shortcuts which often
+            work where the website can't (paywalls, anti-bot, etc.) */}
+        {!loading && (error || analysis) && (
+          <PlatformPromo variant={error ? 'error' : 'success'} />
         )}
 
         {error && (
