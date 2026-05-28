@@ -60,14 +60,30 @@ export async function fetchAndExtract(url: string): Promise<ExtractedArticle> {
   }
 
   if (!response.ok) {
-    // Common case: 401/403 = paywall or login wall; 404 = bad URL
+    // 401/403 = paywall or login wall
     if (response.status === 401 || response.status === 403) {
-      throw new Error('That article appears to be behind a paywall or login.');
+      throw new Error(
+        'That article is behind a paywall or login. Try the Chrome extension or iOS Shortcuts — they read content from your own logged-in browser.'
+      );
+    }
+    // 429 = rate-limited / anti-bot block (NYT, WaPo, X, etc. often do this)
+    if (response.status === 429) {
+      throw new Error(
+        'That site is blocking automated requests from our server. Use the Chrome extension or iOS Shortcuts instead — they read directly from your browser, so the site doesn\'t see us.'
+      );
+    }
+    // 451 = legal block; 503 = often Cloudflare-style anti-bot
+    if (response.status === 451 || response.status === 503) {
+      throw new Error(
+        'That site is blocking our server (anti-bot protection). The Chrome extension or iOS Shortcuts will work — they read content from your own browser.'
+      );
     }
     if (response.status === 404) {
-      throw new Error('That URL doesn\'t exist (404).');
+      throw new Error('That URL doesn\'t exist (404). Double-check the link.');
     }
-    throw new Error(`Could not fetch the page (HTTP ${response.status}).`);
+    throw new Error(
+      `Could not fetch the page (HTTP ${response.status}). Try the Chrome extension or iOS Shortcuts — they may work where the website can\'t.`
+    );
   }
 
   const html = await response.text();
